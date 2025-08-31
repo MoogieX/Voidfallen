@@ -1,0 +1,28 @@
+{
+  "name": "moogie",
+  "backstory": "",
+  "hp": 107,
+  "max_hp": 120,
+  "exp": 10,
+  "level": 2,
+  "attack": 15,
+  "inventory": {
+    "Potion": 2,
+    "Lantern": 1,
+    "Bandage": 1
+  },
+  "coins": {
+    "gold": 3,
+    "silver": 0,
+    "bronze": 0,
+    "zinc": 0
+  },
+  "unlocked_rest": true,
+  "pet": null,
+  "armor": null,
+  "tool": null,
+  "lantern_on": true,
+  "lantern_fuel": 4,
+  "poison_turns": 0,
+  "bleed_turns": 0
+}
