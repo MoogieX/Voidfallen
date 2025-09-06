@@ -147,6 +147,27 @@ It is organized into milestones, each with acceptance criteria and a summary of 
 
 ---
 
+## Milestone 10: The Volcano
+
+**Acceptance Criteria:**
+- New "volcano" path accessible from the main exploration hub in Act 2.
+- Volcano path has unique descriptions for both normal and dark modes.
+- New volcano-specific enemy pool for normal mode (e.g., Lava Golem, Fire Elemental).
+- New volcano-specific enemy pool for dark mode (e.g., Charred Soul, Magma Fiend).
+- A unique boss encounter at the end of the path.
+- Boss is a Dragon in normal mode.
+- Boss is a Demon in dark mode.
+- Defeating the boss provides a significant reward.
+
+**Progress:**  
+- Implemented volcano path, accessible in Act 2.
+- Added new enemy pools for normal and dark modes.
+- Added Dragon (normal) and Demon (dark mode) boss fight.
+- Boss rewards are implemented.
+- All features robust and tested.
+
+---
+
 ## Re-implementation Improvements (September 2025)
 
 This section summarizes the key improvements made during the re-implementation phase, focusing on enhanced code quality, modularity, error handling, and user experience.

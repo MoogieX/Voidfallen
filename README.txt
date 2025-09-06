@@ -1,13 +1,5 @@
-To run your game in the terminal, follow these steps:
-
-Open a terminal or command prompt.
-Navigate to your script's directory:
-
-cd c:\Users\user\Documents\PYTHONSCRIPT
-Run the script with Python:
-
-python game.py
-
-This will start your game and display the main menu.
+Go to the game files, and there is a .exe which should boot up the game.
 
 This is NOT malware, check the code yourself if you are worried.
+
+Your beloved new dev -Moogietheboogie

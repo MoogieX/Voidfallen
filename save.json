@@ -1,9 +1,9 @@
 {
   "name": "moogie",
   "backstory": "",
-  "hp": 107,
+  "hp": 85,
   "max_hp": 120,
-  "exp": 10,
+  "exp": 20,
   "level": 2,
   "attack": 15,
   "inventory": {
@@ -18,7 +18,7 @@
     "zinc": 0
   },
   "unlocked_rest": true,
-  "pet": null,
+  "pet": "Void Cat",
   "armor": null,
   "tool": null,
   "lantern_on": true,
