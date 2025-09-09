@@ -1,3 +1,9 @@
+import os
+import json
+import time
+import random
+import rich
+
 class Player:
     def __init__(self):
         self.name = input("Lost one.. Do you have a name? ").strip().title()
