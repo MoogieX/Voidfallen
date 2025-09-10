@@ -17,6 +17,7 @@ class Player:
           print(f"You surely much be tired after such a journey...")
           answer = input("Please come sit with me?: ").strip().lower()
           if answer in ["y", "yes", "Yeah", "Yes", "sure", "yeah" "Sure", "Of course", "ofcourse"]:
+              
             print("The figure moves aside for you to sit with them")
             print("I don't expect you to stay long, they never do... But thank you for staying longer than most.")
             print("I must warn you, there are dangerous entities from the north, you should be wary on your travels... To the east, there is an inn you can stay in {self.name}.")
@@ -76,7 +77,6 @@ def direction(player):
 
     if choice in directions:
         print(directions[choice])
-        # Random encounter chance
         if random.random() < 0.5:
             enemy_pool = [
                 Enemy("Shadow", 40, 15),
@@ -89,6 +89,18 @@ def direction(player):
             print("The ground has gone silent...")
     else:
         print("That is not a valid direction...")
+        if choice == east:
+            print("You head eastwards... And find an Inn.")
+            def inn(player):
+                print("You enter the inn, the warm atmosphere a stark contrast to the rest of the void outside...")
+                print("There is a warm flickering lantern above, and the air smells of fresh food")
+                choice = input("Do you take the moment to rest?")
+                if choice in ["Yes", "yes", "yeah", "Y", "Yeah", "sure", "Sure", "y"]:
+                    player.health = 100
+                    print("You feel much better after a night of rest at the inn")
+                elif choice in ["n", "N", "NO", "no", "No", "Nah", "nah", "Nope", "nope"]:
+                    print("You do not rest yet")
+                
 
 #gamestufflolz
 player = Player()
