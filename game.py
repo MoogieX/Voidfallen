@@ -27,37 +27,69 @@ class Player:
              return False
           else:
             print("Sorry, can you repeat that?")
-#End of intro
-def direction():
-  print("You give your thanks to the figure, and continue on the trail")
-  input("Where to now?")
-  print("~---------~")
-  print ("North")
-  print("Northeast")
-  print("East")
-  print("Southeast")
-  print("South")
-  print("Southwest")
-  print("West")
-  print("Northwest")
-  print("~---------~")
-  if direction in ["n", "north", "North", "N"]:
-    print(f"You head northwards")
-  elif direction in ["NE", "ne," "Northeast", "northeast"]:
-    print(f"You head Northeast")
-  elif direction in ["E", "e", "east", "East"]:
-    print("You head Eastwards")
-  elif direction in ["SE", "se", "Southeast", "southeast"]:
-    print("You head Southeast")
-  elif direction in ["S", "s", "south", "South"]:
-    print("You head Southwards")
-  elif direction in ["W", "w", "West", "west"]:
-    print("You head westwards")
-  elif direction in ["NW", "nw", "Northwest", "northwest"]:
-    print("You head Northwest")
-  
-  
-  
 
+class Enemy:
+    def __init__(self, name, health, attack):
+        self.name = name
+        self.health = health
+        self.attack = attack
+
+def battle(player, enemy):
+    print(f"\nA {enemy.name} wanders out from the shadows")
+    while player.health > 0 and enemy.health > 0:
+        input("Press Enter to strike...")
+        damage = random.randint(10, 20)
+        enemy.health -= damage
+        print(f"You hit the {enemy.name} for {damage} damage. Enemy HP: {enemy.health}")
+
+        if enemy.health <= 0:
+            print(f"The {enemy.name} dissapears into the darkness...")
+            return
+
+        enemy_damage = random.randint(5, enemy.attack)
+        player.health -= enemy_damage
+        print(f"The {enemy.name} lashes out for {enemy_damage} damage. Your HP: {player.health}")
+
+        if player.health <= 0:
+            print("You have been felled... The {enemy.name} takes its victory.")
+            exit()
+
+def direction(player):
+    print("You give your thanks to the figure, and continue on the trail")
+    print("~---------~")
+    print("North\nNortheast\nEast\nSoutheast\nSouth\nSouthwest\nWest\nNorthwest")
+    print("~---------~")
+    choice = input("Where to now? ").strip().lower()
+
+    directions = {
+        "north", "North", "N", "n", "NORTH": "You head northwards",
+        "northeast", "Northeast", "NE" "ne", "NORTHEAST": "You head Northeast",
+        "east", "East" "E" "e", "EAST": "You head Eastwards",
+        "southeast", "Southeast" "SE" "se", "SOUTHEAST": "You head Southeast",
+        "south", "South" "S" "s", "SOUTH": "You head Southwards",
+        "southwest", "Southwest" "SW" "sw", "SOUTHWEST": "You head Southwest",
+        "west", "West", "w" "W", "WEST": "You head Westwards",
+        "northwest", "NW", "nw", "Northwest", "NORTHWEST": "You head Northwest"
+    }
+
+    if choice in directions:
+        print(directions[choice])
+        # Random encounter chance
+        if random.random() < 0.5:
+            enemy_pool = [
+                Enemy("", 40, 15),
+                Enemy("Silloete", 60, 20),
+                Enemy("Figured Shadow", 30, 10)
+            ]
+            enemy = random.choice(enemy_pool)
+            battle(player, enemy)
+        else:
+            print("The ground has gone silent...")
+    else:
+        print("That direction has faded from existance...")
+
+#gamestuff
 player = Player()
 player.intro()
+while True:
+    direction(player)
