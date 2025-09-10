@@ -16,17 +16,19 @@ class Player:
         while True:
           print(f"You surely much be tired after such a journey...")
           answer = input("Please come sit with me?: ").strip().lower()
-          if answer in ["y", "yes", "Yeah", "Yes"]:
+          if answer in ["y", "yes", "Yeah", "Yes", "sure", "yeah" "Sure", "Of course", "ofcourse"]:
             print("The figure moves aside for you to sit with them")
             print("I don't expect you to stay long, they never do... But thank you for staying longer than most.")
             print("I must warn you, there are dangerous entities from the north, you should be wary on your travels... To the east, there is an inn you can stay in {self.name}.")
             return True            
-          elif answer in ["n", "no", "No", "Nah"]:
+          elif answer in ["n", "no", "No", "Nah", "nah", "Nope", "nope"]:
              print("That is alright, I wouldn't have expected such a weary soul such as yourself to accept such offers...")
              print("But I must warn you... There are hostile entities around here, to the north. There is an inn to the east you can stay in.")
              return False
           else:
             print("Sorry, can you repeat that?")
+
+#after intro
 
 class Enemy:
     def __init__(self, name, health, attack):
@@ -77,18 +79,18 @@ def direction(player):
         # Random encounter chance
         if random.random() < 0.5:
             enemy_pool = [
-                Enemy("", 40, 15),
+                Enemy("Shadow", 40, 15),
                 Enemy("Silloete", 60, 20),
-                Enemy("Figured Shadow", 30, 10)
+                Enemy("Figure", 30, 10)
             ]
             enemy = random.choice(enemy_pool)
             battle(player, enemy)
         else:
             print("The ground has gone silent...")
     else:
-        print("That direction has faded from existance...")
+        print("That is not a valid direction...")
 
-#gamestuff
+#gamestufflolz
 player = Player()
 player.intro()
 while True:
