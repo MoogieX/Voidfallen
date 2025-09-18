@@ -322,34 +322,29 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         }
 
-        handleCommand(command) {
-            const cleanCommand = command.trim().toLowerCase();
-            printToTerminal(command, true);
-
-            if (this.state === 'in_battle') {
-                this.currentBattle.handleCommand(cleanCommand);
-            } else if (this.state === 'main_menu') {
-                this.handleMainMenu(cleanCommand);
-            } else if (this.state === 'playing') {
-                this.handlePlaying(cleanCommand);
-            } else if (this.state === 'traversing_path') {
-                this.handleTraversal(cleanCommand);
-            } else if (this.state === 'awaiting_input') {
-                const nextStep = endEvents[this.nextState];
-                if (nextStep) nextStep(this, cleanCommand);
-            } else {
-                printToTerminal(`Unknown game state: ${this.state}`);
-            }
-        }
-    }
-
     const game = new Game();
     game.start();
 
     commandInput.addEventListener('keydown', (e) => {
         if (e.key === 'Enter') {
             const command = commandInput.value;
-            game.handleCommand(command);
+            const cleanCommand = command.trim().toLowerCase();
+            printToTerminal(command, true);
+
+            if (game.state === 'in_battle') {
+                game.currentBattle.handleCommand(cleanCommand);
+            } else if (game.state === 'main_menu') {
+                game.handleMainMenu(cleanCommand);
+            } else if (game.state === 'playing') {
+                game.handlePlaying(cleanCommand);
+            } else if (game.state === 'traversing_path') {
+                game.handleTraversal(cleanCommand);
+            } else if (game.state === 'awaiting_input') {
+                const nextStep = endEvents[game.nextState];
+                if (nextStep) nextStep(game, cleanCommand);
+            } else {
+                printToTerminal(`Unknown game state: ${game.state}`);
+            }
             commandInput.value = '';
         }
     });
