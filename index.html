@@ -1,69 +1,64 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Voidfallen - A Text-Based Adventure</title>
-    <style>
-        body {
-            background-color: #1a1a1a;
-            color: #f0f0f0;
-            font-family: 'Courier New', Courier, monospace;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
-            margin: 0;
-            text-align: center;
-        }
-        .container {
-            padding: 40px;
-            border: 1px solid #444;
-            border-radius: 8px;
-            background-color: #2a2a2a;
-            box-shadow: 0 0 20px rgba(0, 0, 0, 0.5);
-        }
-        h1 {
-            font-size: 3em;
-            margin-bottom: 10px;
-            color: #e0e0e0;
-        }
-        p {
-            font-size: 1.2em;
-            margin-bottom: 30px;
-            color: #b0b0b0;
-        }
-        .download-button {
-            display: inline-block;
-            padding: 15px 30px;
-            font-size: 1.5em;
-            color: #1a1a1a;
-            background-color: #a0a0a0;
-            border: none;
-            border-radius: 5px;
-            text-decoration: none;
-            font-weight: bold;
-            transition: background-color 0.3s, transform 0.2s;
-        }
-        .download-button:hover {
-            background-color: #f0f0f0;
-            transform: scale(1.05);
-        }
-        .footer {
-            margin-top: 30px;
-            font-size: 0.9em;
-            color: #666;
-        }
-    </style>
+  <meta charset="UTF-8">
+  <title>Voidfallen – Text Adventure</title>
+
+  <!-- Mobile‑friendly viewport -->
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <!-- Optional styling – you can keep or replace with your own CSS -->
+  <link rel="stylesheet" href="style.css">
+  <style>
+    body { font-family: Arial, Helvetica, sans-serif; background:#111; color:#eee; margin:0; padding:1rem; }
+    #output { white-space: pre-wrap; margin-bottom:1rem; }
+    #cmdForm { display:flex; }
+    #cmdInput { flex:1; padding:.5rem; font-size:1rem; background:#222; color:#fff; border:none; }
+  </style>
 </head>
 <body>
-    <div class="container">
-        <h1>Voidfallen</h1>
-        <p>A text-based adventure game by Moogietheboogie.</p>
-        <a href="https://github.com/MoogieX/Voidfallen/releases/download/V1.0.0/game.exe" class="download-button">Download for Windows</a>
-        <div class="footer">
-            <p>Version 1.0.0</p>
-        </div>
-    </div>
-</body>
-</html>
+  <h1>Voidfallen</h1>
+  <p>A text‑based adventure game by Moogietheboogie.</p>
+
+  <!-- Game output area -->
+  <pre id="output"></pre>
+
+  <!-- Single text input – this is all the UI the game needs -->
+  <form id="cmdForm">
+    <input type="text" id="cmdInput" autocomplete="off"
+           placeholder="What do you do?" autofocus />
+  </form>
+
+  <!-- -----------------------------------------------------------------
+       Load your actual game script.  The path must be relative to this
+       file (e.g. js/game.js if you kept it in a subfolder called js).
+       ----------------------------------------------------------------- -->
+  <script src="js/game.js"></script>
+
+  <!-- -----------------------------------------------------------------
+       Bootstrap – replace the `processCommand` call with whatever
+       function your game.js exposes (e.g. `game.handle(input)`).
+       ----------------------------------------------------------------- -->
+  <script>
+    // Grab DOM elements
+    const output = document.getElementById('output');
+    const form   = document.getElementById('cmdForm');
+    const input  = document.getElementById('cmdInput');
+
+    // -----------------------------------------------------------------
+    // Hook into your actual game logic.
+    // ---------------------------------------------------------------
+    // Example: if your game.js defines `window.game = { handle: fn }`
+    // you could call:  const result = window.game.handle(cmd);
+    // For the purpose of this template we’ll just echo the command.
+    // -----------------------------------------------------------------
+    function processCommand(cmd) {
+      // TODO: replace this line with your real command processor
+      // e.g. return window.game.handle(cmd);
+      return `You typed: "${cmd}"`;   // placeholder
+    }
+
+    // -----------------------------------------------------------------
+    // Form submission – send the command to the game and display output
+    // -----------------------------------------------------------------
+    form.addEventListener('submit', e =>
