@@ -90,6 +90,9 @@ class Player:
     def spend_gold(self, amount: int) -> None:
         self.coins["gold"] -= amount
 
+    def gain_gold(self, amount: int) -> None:
+        self.coins["gold"] += amount
+
     def gain_exp(self, amount: int) -> None:
         self.exp += amount
         self._try_level_up()
@@ -144,13 +147,27 @@ class Player:
             self.bleed_turns -= 1
             self.console.print("Bleeding deals 2 damage to you!")
 
+    def display_inventory(self):
+        self.console.print("\n--- Your Inventory ---")
+        if not self.inventory:
+            self.console.print("  (Empty)")
+        else:
+            for item, qty in self.inventory.items():
+                self.console.print(f"  {item}: {qty}")
+        self.console.print(f"Equipped Armor: {self.armor if self.armor else 'None'}")
+        self.console.print(f"Equipped Tool: {self.tool if self.tool else 'None'}")
+        self.console.print(f"Equipped Pet: {self.pet if self.pet else 'None'}")
+        self.console.print(f"Lantern Fuel: {self.lantern_fuel} turns (On: {'Yes' if self.lantern_on else 'No'})")
+        self.console.print("----------------------")
+
     def get_current_attack(self, game_instance: "Game") -> int:
         base_attack = self.attack
         if self.tool:
-            # Parse tier from tool name (e.g., "Common Rusty Pickaxe")
+            # Parse tier from tool name (e.g., "Rusty Sword")
             parts = self.tool.split(" ", 1)
-            if len(parts) > 1 and parts[0] in game_instance.weapon_tiers:
+            if len(parts) > 1:
                 tier_name = parts[0]
-                tier_bonus = game_instance.weapon_tiers[tier_name]["bonus"]
-                base_attack += tier_bonus
+                if tier_name in game_instance.weapon_tiers:
+                    tier_bonus = game_instance.weapon_tiers[tier_name]["bonus"]
+                    base_attack += tier_bonus
         return base_attack

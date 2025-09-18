@@ -1,28 +1,31 @@
 {
-  "name": "moogie",
-  "backstory": "",
-  "hp": 85,
-  "max_hp": 120,
-  "exp": 20,
-  "level": 2,
-  "attack": 15,
+  "name": "Astar",
+  "backstory": "A forgotten soul, given a second chance.",
+  "hp": 300,
+  "max_hp": 300,
+  "exp": 0,
+  "level": 30,
+  "attack": 50,
   "inventory": {
-    "Potion": 2,
-    "Lantern": 1,
-    "Bandage": 1
+    "Potion": 10,
+    "Bandage": 5,
+    "Ectoplasm": 1
   },
   "coins": {
-    "gold": 3,
+    "gold": 1000,
     "silver": 0,
     "bronze": 0,
     "zinc": 0
   },
   "unlocked_rest": true,
-  "pet": "Void Cat",
-  "armor": null,
-  "tool": null,
+  "pet": "Spectral Fox",
+  "armor": "Void Cloak",
+  "tool": "Legendary Ancient Key",
   "lantern_on": true,
-  "lantern_fuel": 4,
+  "lantern_fuel": 20,
   "poison_turns": 0,
-  "bleed_turns": 0
+  "bleed_turns": 0,
+  "act": 2,
+  "alt_mode": true,
+  "developer_mode": true
 }

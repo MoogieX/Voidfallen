@@ -30,6 +30,25 @@ class Game:
         random.seed()
         self.console = console
         self.player = Player(self.console)
+        self.exploration = Exploration(self)
+        self.alt_mode = False
+        self.act = 1
+        self.developer_mode = False
+        self.difficulty = "normal"
+        self.shop_prices = {
+            "Potion": 10,
+            "Bandage": 5,
+            "Lantern": 20,
+            "Silk": 2,
+            "Animal Fat": 3
+        }
+        self.weapon_tiers = {
+            "Rusty": {"bonus": 2, "names": ["Sword", "Axe"]},
+            "Iron": {"bonus": 5, "names": ["Sword", "Axe"]},
+            "Steel": {"bonus": 10, "names": ["Sword", "Axe"]}
+        }
+        self._shop_visited = 0
+        self.village_visited_first_time = False # New: Track first village visit
 
     # --------------------
     # Save / Load System
@@ -121,21 +140,63 @@ class Game:
 
         console.print("\nYou leave the clearing after giving thanks to the figure, onwards you shall go...\n")
 
+    def new_intro(self) -> None:
+        import os
+        user_system_name = os.path.basename(os.path.expanduser('~'))
+
+        # The rest of the original intro logic can be integrated here if desired,
+        # or the game can proceed directly to exploration/main loop.
+        # For now, it will just display this new intro and then proceed as if the original intro finished.
+        # You can add more interactive elements or choices here if you wish.
+
+        # After the new intro, we can proceed to the name input from the original intro
+        self.player.name = input("Hello lost one, what is your name? ").strip()
+        if self.player.name.lower() == "moogietheboogie":
+            self.developer_mode = True
+            console.print("✨ Developer mode activated! Welcome back #001 ✨")
+        console.print(f"Interesting name you have... {self.player.name}")
+
+        self.player.backstory = input(
+            "'Where did you come from? This must be a blessing for my calls for... Nevermind'"
+            "'Tis' not often we have visitors here in this sect of the void.'"
+        ).strip()
+        console.print(
+            f"Ah... {self.player.backstory}. It is a place I am yet to visit, though it is much beautiful from what I hear."
+            f"You must have come a long way from there, {self.player.name}... Do you ever plan to go home?"
+        )
+
+        if ask_yes_no("'Care to sit down with me? Surely you must be frazzled after such a journey'"):
+            console.print("'Very well then.' The figure moves aside for you to join them")
+        else:
+            console.print("'That's alright, just stay to talk, if you will.'")
+
+        if ask_yes_no(f"Say, {self.player.name}, have you heard what has been happening here"):
+            console.print(
+                "So you are aware, how peculiar... Then, "
+                f"{self.player.name}, there is an old trail up to the East. "
+                "You may find an inn where you can stay."
+            )
+        else:
+            console.print(
+                "Not that I would have expected you to. "
+                "There are creatures from the north, they have been encroaching on our void... "
+                "Slaughtering the residents."
+            )
+
+        console.print("\nYou leave the clearing after giving thanks to the figure, onwards you shall go...\n")
+
     def _astar_intro(self):
         console.print("\n--- A New Beginning ---")
-        console.print("You awaken with a gasp, the memories of your defeat still fresh.")
-        console.print("But you are not in the volcano. You are somewhere else... somewhere familiar.")
-        console.print("A figure stands before you, the same one from the clearing.")
-        console.print("'So, you have returned,' the figure says, their voice a low hum.")
-        console.print("'Astar... a name I have not heard in a long time.'")
-        console.print("'The demon thought it had claimed you, but I have given you another chance.'")
-        console.print("'Your journey is far from over. The world needs you.'")
-        console.print("'Go now, and fulfill your destiny.'")
+        console.print("You awaken within the field, of which you do not recognize.")
+        console.print("An entity, the soft features that it once shown you, now hardened as they stare down at your form in the grass")
+        console.print("'Lost one... That was something you never were, was it?...'")
+        console.print("'You did this.. All by playing with death...")
+        console.print(f"'I took you in with kindness, {system.username}'")
 
     def _create_astar_save(self):
         astar_data = {
             "name": "Astar",
-            "backstory": "A forgotten soul, given a second chance.",
+            "backstory": "A sinning soul",
             "hp": 300,
             "max_hp": 300,
             "exp": 0,
@@ -170,8 +231,8 @@ class Game:
             boss = {"name": boss_name, "hp": 500, "attack": 50, "boss": True}
             self.console.print(f"Spawning custom boss: {boss_name}")
         elif self.alt_mode:
-            boss = {"name": "Azrael, the Unyielding", "hp": 9999, "attack": 999, "boss": True}
-            self.console.print("Spawning Azrael, the Unyielding.")
+            boss = {"name": "Azrael, the Death Angel", "hp": 9999, "attack": 999, "boss": True}
+            self.console.print("Spawning Azrael, the Death Angel.")
         else:
             boss = {"name": "Ancient Dragon", "hp": 300, "attack": 30, "boss": True}
             self.console.print("Spawning Ancient Dragon.")
@@ -182,15 +243,15 @@ class Game:
         console.print("\nChoose a difficulty: easy, normal, hard")
         while True:
             choice = input("Type difficulty: ").strip().lower()
-            if choice == "easy":
+            if choice in ["easy", "EASY", "Easy", "E", "e"]:
                 self.difficulty = "easy"
                 console.print("Difficulty set to Easy.")
                 break
-            elif choice == "normal":
+            elif choice in ["normal", "Normal", "NORMAL", "N", "n"]:
                 self.difficulty = "normal"
                 console.print("Difficulty set to Normal.")
                 break
-            elif choice == "hard":
+            elif choice in ["hard", "Hard", "HARD", "Hardmode", "hardmode", "H", "h"]:
                 self.difficulty = "hard"
                 console.print("Difficulty set to Hard.")
                 break
@@ -199,6 +260,8 @@ class Game:
 
     def scale_enemy(self, act=None, cavern=False, rare=False, volcano=False) -> Dict[str, int]:
         lvl = self.player.level
+        if volcano:
+            lvl = max(lvl, 20) # Ensure volcano enemies are at least level 20
         # Alternate mode: completely new enemy pools
         if self.alt_mode:
             if volcano:
@@ -282,8 +345,11 @@ class Game:
             # Boss battles have custom rewards handled in their respective methods
             if enemy.get("boss"):
                 return result
-            console.print(f"You defeated the {enemy['name']} and gained 10 EXP!")
-            self.player.gain_exp(10)
+            exp_gain = 10 * self.player.level
+            gold_gain = random.randint(5, 10) * self.player.level
+            console.print(f"You defeated the {enemy['name']} and gained {exp_gain} EXP and {gold_gain} gold!")
+            self.player.gain_exp(exp_gain)
+            self.player.gain_gold(gold_gain)
             battle_instance.handle_drops()
             self.save_game()
             # Only show crafting menu if NOT in cavern
@@ -296,7 +362,7 @@ class Game:
                 exit()
             else:
                 console.print("You have fallen in battle...")
-                exit()
+                return "lost_normal"
         elif result == "enemy_fled":
             # Message is handled in the Battle class, no further action needed.
             pass
@@ -316,6 +382,118 @@ class Game:
                 break
             else:
                 console.print("Invalid choice. Type 'bandage' or 'exit'.")
+
+    def inventory_menu(self):
+        while True:
+            console.print("\n--- Inventory ---")
+            self.player.display_inventory()
+            console.print("Options: use [item], equip [type] [item], unequip [type], refuel lantern, drop [item], exit")
+            choice = input("What would you like to do? ").strip().lower().split(maxsplit=1)
+
+            if not choice:
+                console.print("Invalid command.")
+                continue
+
+            action = choice[0]
+            args = choice[1] if len(choice) > 1 else ""
+
+            if action == "exit":
+                console.print("Closing inventory.")
+                break
+            elif action == "use":
+                self._handle_inventory_use(args)
+            elif action == "equip":
+                self._handle_inventory_equip(args)
+            elif action == "unequip":
+                self._handle_inventory_unequip(args)
+            elif action == "refuel":
+                self._handle_refuel_lantern()
+            elif action == "drop":
+                self._handle_inventory_drop(args)
+            else:
+                console.print("Invalid option.")
+
+    def _handle_inventory_use(self, item_name: str):
+        # Placeholder for using items (e.g., potions)
+        if item_name.lower() == "potion" and self.player.inventory.get("Potion", 0) > 0:
+            self.player.inventory["Potion"] -= 1
+            self.player.heal(30)
+            console.print("You drink a potion and restore 30 HP.")
+        elif item_name.lower() == "bandage" and self.player.inventory.get("Bandage", 0) > 0:
+            self.player.inventory["Bandage"] -= 1
+            self.player.poison_turns = 0
+            self.player.bleed_turns = 0
+            console.print("You use a bandage and cure all bleeding and poison effects!")
+        else:
+            console.print(f"You don't have {item_name} or it's not usable from here.")
+
+    def _handle_inventory_equip(self, args: str):
+        parts = args.split(maxsplit=1)
+        if len(parts) < 2:
+            console.print("Usage: equip [type] [item_name]")
+            return
+        item_type = parts[0].lower()
+        item_name = parts[1].title()
+
+        if item_type in ["armor", "tool", "pet"]:
+            if item_name in self.player.inventory or (item_type == "pet" and item_name == self.player.pet): # Allow equipping if already equipped
+                self.player.equip(item_type, item_name)
+            else:
+                console.print(f"You don't have {item_name} in your inventory.")
+        else:
+            console.print("Invalid equipment type. Use 'armor', 'tool', or 'pet'.")
+
+    def _handle_inventory_unequip(self, item_type: str):
+        item_type = item_type.lower()
+        if item_type == "armor":
+            if self.player.armor:
+                self.player.add_item(self.player.armor) # Add to inventory
+                console.print(f"You unequipped {self.player.armor}.")
+                self.player.armor = None
+            else:
+                console.print("You have no armor equipped.")
+        elif item_type == "tool":
+            if self.player.tool:
+                self.player.add_item(self.player.tool) # Add to inventory
+                console.print(f"You unequipped {self.player.tool}.")
+                self.player.tool = None
+            else:
+                console.print("You have no tool equipped.")
+        elif item_type == "pet":
+            if self.player.pet:
+                self.player.add_item(self.player.pet) # Add to inventory
+                console.print(f"You unequipped {self.player.pet}.")
+                self.player.pet = None
+            else:
+                console.print("You have no pet equipped.")
+        else:
+            console.print("Invalid unequip type. Use 'armor', 'tool', or 'pet'.")
+
+    def _handle_refuel_lantern(self):
+        if self.player.inventory.get("Animal Fat", 0) > 0:
+            qty = int(input("How much Animal Fat to use? ").strip())
+            if qty > 0 and self.player.inventory.get("Animal Fat", 0) >= qty:
+                self.player.inventory["Animal Fat"] -= qty
+                self.player.refuel_lantern(qty * 3) # Assuming 1 fat = 3 fuel
+                console.print(f"You used {qty} Animal Fat to refuel your lantern.")
+            else:
+                console.print("Invalid quantity or not enough Animal Fat.")
+        else:
+            console.print("You don't have any Animal Fat.")
+
+    def _handle_inventory_drop(self, item_name: str):
+        item_name = item_name.title()
+        if item_name in self.player.inventory and self.player.inventory[item_name] > 0:
+            if item_name == self.player.pet:
+                console.print(f"You heartlessly abandon your loyal companion, {item_name}. It whimpers and scurries away into the shadows, never to be seen again.")
+                self.player.pet = None # Unequip if it was equipped
+            else:
+                console.print(f"You dropped {item_name}.")
+            self.player.inventory[item_name] -= 1
+            if self.player.inventory[item_name] == 0:
+                del self.player.inventory[item_name]
+        else:
+            console.print(f"You don't have {item_name} to drop.")
 
     def _craft_bandage(self):
         """Handles the crafting of a Bandage item."""
@@ -377,9 +555,9 @@ class Game:
                 console.print(f"You leave the {armor} in your pack.")
                 self.player.add_item(armor)
         elif loot_type == "Tool":
-            tool_base_name = random.choice(["Rusty Pickaxe", "Enchanted Lantern", "Ancient Key"])
             tier_name = random.choice(list(self.weapon_tiers.keys()))
-            full_tool_name = f"{tier_name} {tool_base_name}"
+            weapon_name = random.choice(self.weapon_tiers[tier_name]["names"])
+            full_tool_name = f"{tier_name} {weapon_name}"
             console.print(f"You find a hidden chest! Inside is a tool: {full_tool_name}.")
             if ask_yes_no(f"Do you want to equip the {full_tool_name}?"):
                 self.player.equip("tool", full_tool_name)
@@ -418,7 +596,7 @@ class Game:
         console.print("...You.")
         console.print("Why are you still here? After what you did?")
         console.print(f"  'You do not belong here, #s###...'  ")
-        console.print("This is my world now. Remember when you handed it over to me ####?")
+        console.print("This is my world now. Remember when you handed it over to me ##t#?")
         console.print("You can try, but you will never leave. Not in soul, not in sight. We remember what you did, friend.")
         console.print("The world seems to shift and struggle beneath your feet... Everything feels... wrong.")
 
@@ -426,8 +604,8 @@ class Game:
     def alt_text(self, normal, alt):
         return alt if self.alt_mode else normal
 
-    def explore(self) -> None:
-        self.exploration.explore()
+    def explore(self) -> str:
+        return self.exploration.explore()
 
     def _transition_to_act_2(self):
         """Handles the transition to Act 2 of the game."""
@@ -509,7 +687,7 @@ class Game:
 
     def developer_commands(self):
         console.print("\n--- Developer Commands ---")
-        console.print("Commands: give [item] [qty], gold [amt], heal [amt], equip [type] [name], goto [loc], stats, craft bandage, darkmode, exit")
+        console.print("Commands: give [item] [qty], gold [amt], heal [amt], equip [type] [name], goto [loc], stats, craft bandage, darkmode, boss, give pet, level [amt], save, exit")
         while True:
             cmd = input("DEV> ").strip().lower()
             if cmd == "exit":
@@ -526,6 +704,8 @@ class Game:
                 "darkmode": self._dev_darkmode,
                 "boss": self._dev_boss,
                 "give pet": self._dev_give_pet,
+                "level": self._dev_set_level,
+                "save": self._dev_save,
             }
 
             # Handle commands that start with a keyword
@@ -647,6 +827,23 @@ class Game:
         else:
             self.console.print("Usage: give pet [name]")
 
+    def _dev_set_level(self, cmd: str):
+        """Developer command to set the player's level."""
+        parts = cmd.split()
+        if len(parts) == 2:
+            try:
+                level = int(parts[1])
+                self.player.level = level
+                self.console.print(f"Player level set to {level}.")
+            except ValueError:
+                self.console.print("Invalid level amount.")
+        else:
+            self.console.print("Usage: level [amount]")
+
+    def _dev_save(self, cmd: str):
+        """Developer command to instantly save the game."""
+        self.save_game()
+
     def village(self):
         while True:
             console.print("\nYou are in the village square. What would you like to do?")
@@ -755,7 +952,9 @@ class Game:
             # 60% chance for enemy, 10% for chest, 10% for nothing, 20% for flavor
             event_roll = random.random()
             if event_roll < 0.6:
-                self.battle(self.scale_enemy(cavern=True), cavern=True)
+                battle_result = self.battle(self.scale_enemy(cavern=True), cavern=True)
+                if battle_result in ["lost_boss", "lost_normal"]:
+                    return battle_result
             elif event_roll < 0.7:
                 self.random_event()
             elif event_roll < 0.8:
@@ -792,7 +991,7 @@ class Game:
                     "You awaken at your last save point, shaken but alive.",
                     "You awaken in the last you remembered, they are angry."
                 ))
-                self.load_game()
+                return "lost_normal"
             self.player.lantern_on = False # Ensure lantern is off
             return True # Indicate that the loop should break
         return False # Indicate that the loop should continue
@@ -814,7 +1013,7 @@ if __name__ == "__main__":
             skip = ask_yes_no("Would you like to skip the intro dialog?")
             if skip:
                 # Reset player to default and skip intro
-                game.player = Player()
+                game.player = Player(game.console)
                 # Prompt for username
                 game.player.name = input("Enter your name, lost one: ").strip()
                 if not game.player.name:
@@ -824,13 +1023,19 @@ if __name__ == "__main__":
                     print("✨ Developer mode activated! Welcome back #001 ✨")
                 console.print(f"Welcome, {game.player.name}. Your journey begins...")
             else:
-                game.intro()
-            game.explore()
-            break
+                game.new_intro()
+            result = game.explore()
+            if result in ["lost_boss", "lost_normal"]:
+                continue
+            else:
+                break
         elif choice == "load" or "load game" in choice:
             if game.load_game():
-                game.explore()
-                break
+                result = game.explore()
+                if result in ["lost_boss", "lost_normal"]:
+                    continue
+                else:
+                    break
         elif choice == "export" or "export data" in choice:
             game.export_player_data()
         elif choice == "options":

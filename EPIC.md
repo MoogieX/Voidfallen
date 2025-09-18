@@ -34,6 +34,7 @@ It is organized into milestones, each with acceptance criteria and a summary of 
 - Added exploration system with location descriptions.
 - Implemented random enemy encounters and scaling.
 - Battle system with attack, use item, and run options.
+- Enemy EXP and gold drops now scale with player level.
 
 ---
 
@@ -177,6 +178,9 @@ This section summarizes the key improvements made during the re-implementation p
 -   **Improved Error Handling:** Implemented more specific and robust error handling for file operations (save/load/export) to provide clearer feedback to the user.
 -   **Better User Experience:** Refined main menu interactions and input handling for a more intuitive experience.
 -   **Increased Code Readability:** Added comprehensive docstrings to all new and refactored methods, explaining their purpose, arguments, and return values.
+
+### Gameplay Enhancements:
+-   **Dynamic Combat Rewards:** Implemented player level-based scaling for enemy EXP and gold drops, enhancing progression.
 
 ### Milestone-Specific Improvements:
 

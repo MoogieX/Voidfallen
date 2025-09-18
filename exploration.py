@@ -57,14 +57,15 @@ class Exploration:
             explore_actions = {
                 "dev": self.game.developer_commands,
                 "craft": self.game.crafting_menu,
-                "n": self._explore_n,
-                "ne": self._explore_ne,
-                "e": self._explore_e,
-                "se": self._explore_se,
-                "s": self._explore_s,
-                "sw": self._explore_sw,
-                "w": self._explore_w,
-                "nw": self._explore_nw,
+                "inventory": self.game.inventory_menu,
+                "n": self._explore_n, "north": self._explore_n,
+                "ne": self._explore_ne, "northeast": self._explore_ne,
+                "e": self._explore_e, "east": self._explore_e,
+                "se": self._explore_se, "southeast": self._explore_se,
+                "s": self._explore_s, "south": self._explore_s,
+                "sw": self._explore_sw, "southwest": self._explore_sw,
+                "w": self._explore_w, "west": self._explore_w,
+                "nw": self._explore_nw, "northwest": self._explore_nw,
                 "village": self._explore_village,
                 "ruins": self._explore_ruins,
                 "cavern": self._explore_cavern,
@@ -75,9 +76,17 @@ class Exploration:
             action = explore_actions.get(choice)
             if action:
                 if choice in ["n", "ne", "e", "se", "s", "sw", "w", "nw", "ruins"]:
-                    path_data = action()
-                    if path_data:
-                        self._traverse_path(path_data)
+                    result = action()
+                    if result in ["lost_boss", "lost_normal"]:
+                        return result
+                    if result:
+                        traverse_result = self._traverse_path(result)
+                        if traverse_result in ["lost_boss", "lost_normal"]:
+                            return traverse_result
+                elif choice == "cavern":
+                    result = self.game.cavern_explore()
+                    if result in ["lost_boss", "lost_normal"]:
+                        return result
                 else:
                     action()
             else:
@@ -102,7 +111,9 @@ class Exploration:
                 
                 if not self.game.random_event():
                     if random.random() < path_data["event_chance"]:
-                        self.game.battle(self.game.scale_enemy(act=self.game.act))
+                        battle_result = self.game.battle(self.game.scale_enemy(act=self.game.act))
+                        if battle_result in ["lost_boss", "lost_normal"]:
+                            return battle_result
 
                 if self.player.hp <= 0:
                     return
@@ -177,7 +188,7 @@ class Exploration:
 
     def _explore_e(self):
         path_data = {
-            "stages": 2,
+            "stages": 3,
             "intro_text": {
                 "normal": "You follow the path east. An ancient stone stands here, humming with strange energy.",
                 "alt": "You follow the path east. The stone sits there, shattered as if hit by a force beyond humanity. It is weak."
@@ -187,7 +198,7 @@ class Exploration:
                 "alt": "The stone weeps."
             },
             "event_chance": 0.5,
-            "end_event": self._e_end_event
+            "end_event": self._e_end_event_village # Changed end_event
         }
         return path_data
 
@@ -201,6 +212,13 @@ class Exploration:
                 "You feel a chill as you touch the stone, but nothing else happens.",
                 "You touch the egg. It feels warm, and something inside it moves."
             ))
+
+    def _e_end_event_village(self):
+        self.console.print(self.game.alt_text(
+            "You arrive at the village entrance.",
+            "The village beckons."
+        ))
+        self.game.village()
 
     def _explore_nw(self):
         path_data = {
@@ -372,7 +390,7 @@ class Exploration:
             self.console.print(self.game.alt_text("You decide the oasis is just a mirage and turn back.", "You do not trust the mirage and turn away."))
 
     def _explore_village(self):
-        if self.game.act == 1:
+        if not self.game.village_visited_first_time:
             self.console.print(self.game.alt_text(
                 "You arrive at a small village. Lanterns flicker in the dusk, and villagers eye you warily.",
                 "You arrive at the empty village. Lanterns flicker, but no one is there."
@@ -386,10 +404,7 @@ class Exploration:
             self.game._transition_to_act_2()
             self.game.village()
         else:
-            print(self.game.alt_text(
-                "You can only visit the village in Act 1.",
-                "There is nothing left for you here."
-            ))
+            self.game.village()
 
     def _explore_ruins(self):
         if self.game.act != 2:
