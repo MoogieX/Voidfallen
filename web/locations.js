@@ -45,31 +45,31 @@ const endEvents = {
     "cabin": (game) => {
         game.state = 'awaiting_input';
         game.nextState = 'cabin_enter';
-        game.print("You find a small cabin. Do you enter? (yes/no)");
+        printToTerminal("You find a small cabin. Do you enter? (yes/no)");
     },
     "cabin_enter": (game, command) => {
         if (['y', 'yes'].includes(command)) {
-            game.print("Inside the cabin, you find a lantern. +1 Lantern");
+            printToTerminal("Inside the cabin, you find a lantern. +1 Lantern");
             game.player.addItem("Lantern");
             game.saveGame();
         } else {
-            game.print("You decide not to enter. The cabin looms silently.");
+            printToTerminal("You decide not to enter. The cabin looms silently.");
         }
         game.state = 'playing';
         game.showLocation();
     },
     "woods_clearing": (game) => {
-        game.print("You reach a clearing in the woods. A sense of peace settles over you.");
-        game.print("You find a small pouch of gold.");
+        printToTerminal("You reach a clearing in the woods. A sense of peace settles over you.");
+        printToTerminal("You find a small pouch of gold.");
         game.player.coins.gold += 15;
         game.saveGame();
         game.state = 'playing';
         game.showLocation();
     },
     "village_entrance": (game) => {
-        game.print("You arrive at the village entrance.");
+        printToTerminal("You arrive at the village entrance.");
         // In a more complete version, this would transition to the village state
-        game.print("(Village not yet implemented)");
+        printToTerminal("(Village not yet implemented)");
         game.state = 'playing';
         game.showLocation();
     }

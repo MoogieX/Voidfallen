@@ -3,13 +3,108 @@ document.addEventListener('DOMContentLoaded', () => {
     const commandInput = document.getElementById('command-input');
 
     // --- Helper Functions ---
-    function printToTerminal(text, isCommand = false) { /* ... */ }
+    function printToTerminal(text, isCommand = false) {
+        const output = document.getElementById('output');
+        const line = document.createElement('div');
+        if (isCommand) {
+            line.innerHTML = `<span class="prompt">&gt;</span> ${text}`;
+        } else {
+            line.textContent = text;
+        }
+        output.appendChild(line);
+        output.scrollTop = output.scrollHeight;
+    }
 
-    // --- Player Class (remains the same) ---
-    class Player { /* ... */ }
+    // --- Player Class ---
+    class Player {
+        constructor() {
+            this.name = "";
+            this.backstory = "";
+            this.hp = 100;
+            this.maxHp = 100;
+            this.exp = 0;
+            this.level = 1;
+            this.attack = 10;
+            this.inventory = {"Potion": 2};
+            this.coins = {"gold": 10, "silver": 0, "bronze": 0, "zinc": 0};
+            this.unlockedRest = false;
+            this.pet = null;
+            this.armor = null;
+            this.tool = null;
+            this.lanternOn = false;
+            this.lanternFuel = 0;
+            this.poisonTurns = 0;
+            this.bleedTurns = 0;
+        }
 
-    // --- Exploration Class (remains the same) ---
-    class Exploration { /* ... */ }
+        takeDamage(amount) {
+            this.hp = Math.max(this.hp - amount, 0);
+        }
+
+        heal(amount) {
+            this.hp = Math.min(this.hp + amount, this.maxHp);
+        }
+
+        addItem(name, qty = 1) {
+            this.inventory[name] = (this.inventory[name] || 0) + qty;
+            if (name.toLowerCase() === "lantern" && this.lanternFuel === 0) {
+                this.lanternFuel = 6;
+                printToTerminal("Your lantern is now fueled and ready to use! (6 turns of fuel)");
+            }
+        }
+
+        gainExp(amount) {
+            this.exp += amount;
+            this._tryLevelUp();
+        }
+
+        _tryLevelUp() {
+            while (this.exp >= this.level * 20) {
+                this.exp -= this.level * 20;
+                this.level++;
+                this.maxHp += 20;
+                this.attack += 5;
+                this.hp = this.maxHp;
+                printToTerminal(`You leveled up! You are now level ${this.level}.`);
+            }
+        }
+
+        displayInventory() {
+            printToTerminal("--- Your Inventory ---");
+            if (Object.keys(this.inventory).length === 0) {
+                printToTerminal("  (Empty)");
+            } else {
+                for (const [item, qty] of Object.entries(this.inventory)) {
+                    printToTerminal(`  ${item}: ${qty}`);
+                }
+            }
+            printToTerminal(`Equipped Armor: ${this.armor ? this.armor : 'None'}`);
+            printToTerminal(`Equipped Tool: ${this.tool ? this.tool : 'None'}`);
+            printToTerminal(`Equipped Pet: ${this.pet ? this.pet : 'None'}`);
+            printToTerminal(`Lantern Fuel: ${this.lanternFuel} turns (On: ${this.lanternOn ? 'Yes' : 'No'})`);
+            printToTerminal("----------------------");
+        }
+    }
+
+    // --- Exploration Class ---
+    class Exploration {
+        constructor(game) {
+            this.game = game;
+        }
+
+        explore(direction) {
+            const pathData = locations[direction];
+            if (pathData) {
+                this.game.currentPath = pathData;
+                this.game.pathProgress = 0;
+                this.game.state = 'traversing_path';
+                printToTerminal(pathData.intro_text.normal);
+                printToTerminal(`You are 0/${pathData.stages} of the way. (continue/leave)`);
+            } else {
+                printToTerminal("You can't go that way.");
+            }
+        }
+    }
 
     // --- Battle Class ---
     class Battle {
@@ -36,7 +131,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 this.playerTurn();
             } else if (command === 'item') {
                 printToTerminal("Use which item? (e.g., 'use potion')");
-                // In a real implementation, we'd have a sub-state for item selection
                 printToTerminal(`You have: ${JSON.stringify(this.player.inventory)}`);
             } else if (command.startsWith('use ')) {
                 const item = command.split(' ')[1];
@@ -102,12 +196,10 @@ document.addEventListener('DOMContentLoaded', () => {
                 this.player.coins.gold += goldGain;
             } else if (outcome === 'loss') {
                 printToTerminal("You have fallen in battle... The world fades to black.");
-                // In a real game, this would go to a game over screen or load last save
                 this.game.state = 'main_menu';
                 this.game.start();
                 return;
             }
-            // After battle, return to previous state
             this.game.state = this.game.previousState;
             this.game.currentBattle = null;
             if (this.game.state === 'traversing_path') {
@@ -120,12 +212,114 @@ document.addEventListener('DOMContentLoaded', () => {
     class Game {
         constructor() {
             this.player = new Player();
-            this.exploration = new Exploration();
+            this.exploration = new Exploration(this);
             this.state = 'main_menu';
             this.previousState = 'main_menu';
             this.currentPath = null;
             this.pathProgress = 0;
             this.currentBattle = null;
+        }
+
+        start() {
+            this.state = 'main_menu';
+            printToTerminal("Voidfallen");
+            printToTerminal("1. New Game");
+            printToTerminal("2. Load Game");
+        }
+
+        handleMainMenu(command) {
+            if (command === '1' || command === 'new game') {
+                this.state = 'playing';
+                this.showLocation();
+            } else if (command === '2' || command === 'load game') {
+                this.loadGame();
+            } else {
+                printToTerminal("Invalid choice.");
+            }
+        }
+
+        handlePlaying(command) {
+            if (['n', 'w', 'e', 's'].includes(command)) {
+                this.exploration.explore(command);
+            } else if (command === 'inventory') {
+                this.player.displayInventory();
+            } else {
+                printToTerminal("Unknown command.");
+            }
+        }
+
+        handleTraversal(command) {
+            if (command === 'continue') {
+                this.pathProgress++;
+                if (this.pathProgress >= this.currentPath.stages) {
+                    const endEvent = endEvents[this.currentPath.end_event];
+                    if (endEvent) {
+                        endEvent(this);
+                    } else {
+                        this.state = 'playing';
+                        this.showLocation();
+                    }
+                } else {
+                    if (Math.random() < this.currentPath.event_chance) {
+                        this.startBattle();
+                    } else {
+                        printToTerminal(`You are ${this.pathProgress}/${this.currentPath.stages} of the way. (continue/leave)`);
+                    }
+                }
+            } else if (command === 'leave') {
+                this.state = 'playing';
+                this.showLocation();
+            } else {
+                printToTerminal("Invalid command.");
+            }
+        }
+
+        showLocation() {
+            printToTerminal("You are at a crossroads. Available directions: n, w, e, s");
+        }
+
+        startBattle() {
+            const enemy = this.scaleEnemy();
+            this.previousState = this.state;
+            this.currentBattle = new Battle(this, enemy);
+            this.currentBattle.start();
+        }
+
+        scaleEnemy() {
+            const level = this.player.level;
+            return {
+                name: "Goblin",
+                hp: 30 + (level - 1) * 10,
+                attack: 5 + (level - 1) * 2,
+            };
+        }
+
+        saveGame() {
+            const gameState = {
+                player: this.player,
+                state: this.state,
+                previousState: this.previousState,
+                currentPath: this.currentPath,
+                pathProgress: this.pathProgress,
+            };
+            localStorage.setItem('voidfallenSave', JSON.stringify(gameState));
+            printToTerminal("Game saved.");
+        }
+
+        loadGame() {
+            const savedState = localStorage.getItem('voidfallenSave');
+            if (savedState) {
+                const gameState = JSON.parse(savedState);
+                this.player = Object.assign(new Player(), gameState.player);
+                this.state = gameState.state;
+                this.previousState = gameState.previousState;
+                this.currentPath = gameState.currentPath;
+                this.pathProgress = gameState.pathProgress;
+                printToTerminal("Game loaded.");
+                this.showLocation();
+            } else {
+                printToTerminal("No saved game found.");
+            }
         }
 
         handleCommand(command) {
@@ -136,8 +330,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 this.currentBattle.handleCommand(cleanCommand);
             } else if (this.state === 'main_menu') {
                 this.handleMainMenu(cleanCommand);
-            } else if (this.state.startsWith('intro_')) {
-                this.handleIntro(cleanCommand);
             } else if (this.state === 'playing') {
                 this.handlePlaying(cleanCommand);
             } else if (this.state === 'traversing_path') {
@@ -149,18 +341,17 @@ document.addEventListener('DOMContentLoaded', () => {
                 printToTerminal(`Unknown game state: ${this.state}`);
             }
         }
-
-        startBattle() {
-            const enemy = this.scaleEnemy();
-            this.previousState = this.state; // Save the state before battle
-            this.currentBattle = new Battle(this, enemy);
-            this.currentBattle.start();
-        }
-        
-        // ... other Game methods like start, saveGame, loadGame, scaleEnemy, etc. remain the same ...
     }
 
-    // --- Initial Load and Stubs ---
     const game = new Game();
-    // ... (The rest of the file, including stubs and event listeners, remains the same)
+    game.start();
+
+    commandInput.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') {
+            const command = commandInput.value;
+            game.handleCommand(command);
+            commandInput.value = '';
+        }
+    });
 });
+
