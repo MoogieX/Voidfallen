@@ -1,9 +1,25 @@
-Go to the game files, and there is a .exe which should boot up the game.
+# Voidfallen
 
-This is NOT malware, check the code yourself if you are worried. In the later stages of the game it DOES acsess the system directory username, whatever that may be on your laptop
-Though it will be real awkward if your username is something about dicks lol but here is how it will work
-('munki' from 'C:\Users\munki') <------- I have made sure it does not read any files and only uses the below command:
- os.path.expanduser('~')
- Take of that what you will, it is alright if that makes you uncomfortable. There will be another version of the game without any of the darkmode and system fuckery(even though it isn't really)
+This is a text-based adventure game. You can play it in your browser or by running the Python script.
 
-Your beloved new dev and friend -Moogietheboogie
+## Web Version
+
+To play the web version, open `docs/index.html` in your browser.
+
+## Python Version
+
+To play the Python version, run the `game.py` script from your terminal:
+
+```
+python game.py
+```
+
+### Executable
+
+There is also a `.exe` file in the `dist` directory that you can run to play the game.
+
+**Note:** The Python version of the game accesses your system's username to personalize the experience. It does this by using the `os.path.expanduser('~')` command and does not read any other files. If you are uncomfortable with this, you can play the web version, which does not have this feature.
+
+---
+
+*Your beloved new dev and friend -Moogietheboogie*
