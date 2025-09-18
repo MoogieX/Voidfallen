@@ -1,7 +1,8 @@
+const output = document.getElementById('output');
+const commandInput = document.getElementById('command-input');
+
 document.addEventListener('DOMContentLoaded', () => {
     console.log("DOM fully loaded and parsed");
-    const output = document.getElementById('output');
-    const commandInput = document.getElementById('command-input');
 
     // --- Helper Functions ---
     function printToTerminal(text, isCommand = false) {
@@ -354,29 +355,4 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 });
 
-const game = new Game();
-game.start();
 
-commandInput.addEventListener('keydown', (e) => {
-    if (e.key === 'Enter') {
-        const command = commandInput.value;
-        const cleanCommand = command.trim().toLowerCase();
-        printToTerminal(command, true);
-
-        if (game.state === 'in_battle') {
-            game.currentBattle.handleCommand(cleanCommand);
-        } else if (game.state === 'main_menu') {
-            game.handleMainMenu(cleanCommand);
-        } else if (game.state === 'playing') {
-            game.handlePlaying(cleanCommand);
-        } else if (game.state === 'traversing_path') {
-            game.handleTraversal(cleanCommand);
-        } else if (game.state === 'awaiting_input') {
-            const nextStep = endEvents[game.nextState];
-            if (nextStep) nextStep(game, cleanCommand);
-        } else {
-            printToTerminal(`Unknown game state: ${game.state}`);
-        }
-        commandInput.value = '';
-    }
-});
