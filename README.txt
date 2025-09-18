@@ -1,4 +1,4 @@
-Go to the game files, and there is a .exe which should boot up the game.
+Download the game.exe file
 
 This is NOT malware, check the code yourself if you are worried. In the later stages of the game it DOES acsess the system directory username, whatever that may be on your laptop
 Though it will be real awkward if your username is something about dicks lol but here is how it will work
