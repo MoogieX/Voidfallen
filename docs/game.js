@@ -1,22 +1,21 @@
+function printToTerminal(text, isCommand = false) {
+    console.log(`Printing to terminal: ${text}`);
+    const output = document.getElementById('output');
+    const line = document.createElement('div');
+    if (isCommand) {
+        line.innerHTML = `<span class="prompt">&gt;</span> ${text}`;
+    } else {
+        line.textContent = text;
+    }
+    output.appendChild(line);
+    output.scrollTop = output.scrollHeight;
+}
+
 const output = document.getElementById('output');
 const commandInput = document.getElementById('command-input');
 
 document.addEventListener('DOMContentLoaded', () => {
     console.log("DOM fully loaded and parsed");
-
-    // --- Helper Functions ---
-    function printToTerminal(text, isCommand = false) {
-        console.log(`Printing to terminal: ${text}`);
-        const output = document.getElementById('output');
-        const line = document.createElement('div');
-        if (isCommand) {
-            line.innerHTML = `<span class="prompt">&gt;</span> ${text}`;
-        } else {
-            line.textContent = text;
-        }
-        output.appendChild(line);
-        output.scrollTop = output.scrollHeight;
-    }
 
     // --- Player Class ---
     class Player {
@@ -53,6 +52,15 @@ document.addEventListener('DOMContentLoaded', () => {
             if (name.toLowerCase() === "lantern" && this.lanternFuel === 0) {
                 this.lanternFuel = 6;
                 printToTerminal("Your lantern is now fueled and ready to use! (6 turns of fuel)");
+            }
+        }
+
+        equip(item) {
+            if (this.inventory[item]) {
+                this.tool = item;
+                printToTerminal(`You have equipped the ${item}.`);
+            } else {
+                printToTerminal(`You don't have a ${item} in your inventory.`);
             }
         }
 
@@ -146,7 +154,10 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         playerTurn() {
-            const playerDamage = Math.floor(Math.random() * 4) + this.player.attack;
+            let playerDamage = Math.floor(Math.random() * 4) + this.player.attack;
+            if (this.player.tool === 'Rusty Sword') {
+                playerDamage += 5;
+            }
             this.enemy.hp = Math.max(0, this.enemy.hp - playerDamage);
             printToTerminal(`You strike the ${this.enemy.name} for ${playerDamage} damage!`);
 
@@ -213,7 +224,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // --- Game Class ---
     class Game {
-        constructor() {
+        constructor(endEvents) {
             this.player = new Player();
             this.exploration = new Exploration(this);
             this.state = 'main_menu';
@@ -221,6 +232,7 @@ document.addEventListener('DOMContentLoaded', () => {
             this.currentPath = null;
             this.pathProgress = 0;
             this.currentBattle = null;
+            this.endEvents = endEvents;
         }
 
         start() {
@@ -247,6 +259,13 @@ document.addEventListener('DOMContentLoaded', () => {
                 this.exploration.explore(command);
             } else if (command === 'inventory') {
                 this.player.displayInventory();
+            } else if (command.startsWith('equip ')) {
+                const item = command.split(' ')[1];
+                this.player.equip(item);
+            } else if (command === 'save') {
+                this.saveGame();
+            } else if (command === 'load') {
+                this.loadGame();
             } else {
                 printToTerminal("Unknown command.");
             }
@@ -256,7 +275,7 @@ document.addEventListener('DOMContentLoaded', () => {
             if (command === 'continue') {
                 this.pathProgress++;
                 if (this.pathProgress >= this.currentPath.stages) {
-                    const endEvent = endEvents[this.currentPath.end_event];
+                    const endEvent = this.endEvents[this.currentPath.end_event];
                     if (endEvent) {
                         endEvent(this);
                     } else {
@@ -291,11 +310,19 @@ document.addEventListener('DOMContentLoaded', () => {
 
         scaleEnemy() {
             const level = this.player.level;
-            return {
-                name: "Goblin",
-                hp: 30 + (level - 1) * 10,
-                attack: 5 + (level - 1) * 2,
-            };
+            const enemies = [
+                {
+                    name: "Goblin",
+                    hp: 30 + (level - 1) * 10,
+                    attack: 5 + (level - 1) * 2,
+                },
+                {
+                    name: "Bat",
+                    hp: 20 + (level - 1) * 5,
+                    attack: 8 + (level - 1) * 3,
+                },
+            ];
+            return enemies[Math.floor(Math.random() * enemies.length)];
         }
 
         saveGame() {
@@ -328,7 +355,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     }
 
-    const game = new Game();
+    const game = new Game(endEvents);
     game.start();
 
     commandInput.addEventListener('keydown', (e) => {
@@ -346,7 +373,7 @@ document.addEventListener('DOMContentLoaded', () => {
             } else if (game.state === 'traversing_path') {
                 game.handleTraversal(cleanCommand);
             } else if (game.state === 'awaiting_input') {
-                const nextStep = endEvents[game.nextState];
+                const nextStep = game.endEvents[game.nextState];
                 if (nextStep) nextStep(game, cleanCommand);
             } else {
                 printToTerminal(`Unknown game state: ${game.state}`);

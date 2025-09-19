@@ -38,6 +38,19 @@ const locations = {
         "event_chance": 0.5,
         "end_event": "village_entrance"
     },
+    "s": {
+        "stages": 5,
+        "intro_text": {
+            "normal": "You venture south, drawn by a chilling breeze from a dark cave.",
+            "alt": "You return to the cave where you once sought refuge. The darkness feels... familiar."
+        },
+        "stage_text": {
+            "normal": "You delve deeper into the cave, the darkness enveloping you.",
+            "alt": "The cave's oppressive silence is a constant reminder of what you've lost."
+        },
+        "event_chance": 0.7,
+        "end_event": "cave"
+    }
     // ... other locations will be added here
 };
 
@@ -70,6 +83,14 @@ const endEvents = {
         printToTerminal("You arrive at the village entrance.");
         // In a more complete version, this would transition to the village state
         printToTerminal("(Village not yet implemented)");
+        game.state = 'playing';
+        game.showLocation();
+    },
+    "cave": (game) => {
+        printToTerminal("You reach the deepest part of the cave. A faint light emanates from a crack in the wall.");
+        printToTerminal("You find a rusty sword lodged in the stone.");
+        game.player.addItem("Rusty Sword");
+        game.saveGame();
         game.state = 'playing';
         game.showLocation();
     }
