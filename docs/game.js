@@ -15,7 +15,6 @@ const output = document.getElementById('output');
 const commandInput = document.getElementById('command-input');
 
 document.addEventListener('DOMContentLoaded', () => {
-    console.log("DOM fully loaded and parsed");
 
     // --- Player Class ---
     class Player {
@@ -225,7 +224,6 @@ document.addEventListener('DOMContentLoaded', () => {
     // --- Game Class ---
     class Game {
         constructor(endEvents) {
-            console.log("Initializing Game object...");
             this.player = new Player();
             this.exploration = new Exploration(this);
             this.state = 'main_menu';
@@ -237,7 +235,6 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         start() {
-            console.log("Starting game...");
             this.state = 'main_menu';
             printToTerminal("Voidfallen");
             printToTerminal("1. New Game");
@@ -381,6 +378,5 @@ document.addEventListener('DOMContentLoaded', () => {
             }
             commandInput.value = '';
         }
+    });
 });
-
-
