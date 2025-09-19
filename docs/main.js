@@ -1,4 +1,15 @@
-alert("Script is running!");
+function printToTerminal(text, isCommand = false) {
+    console.log(`Printing to terminal: ${text}`);
+    const output = document.getElementById('output');
+    const line = document.createElement('div');
+    if (isCommand) {
+        line.innerHTML = `<span class="prompt">&gt;</span> ${text}`;
+    } else {
+        line.textContent = text;
+    }
+    output.appendChild(line);
+    output.scrollTop = output.scrollHeight;
+}
 
 const locations = {
     "n": {
@@ -95,19 +106,6 @@ const endEvents = {
         game.showLocation();
     }
 };
-
-function printToTerminal(text, isCommand = false) {
-    console.log(`Printing to terminal: ${text}`);
-    const output = document.getElementById('output');
-    const line = document.createElement('div');
-    if (isCommand) {
-        line.innerHTML = `<span class="prompt">&gt;</span> ${text}`;
-    } else {
-        line.textContent = text;
-    }
-    output.appendChild(line);
-    output.scrollTop = output.scrollHeight;
-}
 
 const output = document.getElementById('output');
 const commandInput = document.getElementById('command-input');
