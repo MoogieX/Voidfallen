@@ -1,0 +1,31 @@
+{
+  "name": "Astar",
+  "backstory": "A forgotten soul, given a second chance.",
+  "hp": 300,
+  "max_hp": 300,
+  "exp": 0,
+  "level": 30,
+  "attack": 50,
+  "inventory": {
+    "Potion": 10,
+    "Bandage": 5,
+    "Ectoplasm": 1
+  },
+  "coins": {
+    "gold": 1000,
+    "silver": 0,
+    "bronze": 0,
+    "zinc": 0
+  },
+  "unlocked_rest": true,
+  "pet": "Spectral Fox",
+  "armor": "Void Cloak",
+  "tool": "Legendary Ancient Key",
+  "lantern_on": true,
+  "lantern_fuel": 20,
+  "poison_turns": 0,
+  "bleed_turns": 0,
+  "act": 2,
+  "alt_mode": true,
+  "developer_mode": true
+}
