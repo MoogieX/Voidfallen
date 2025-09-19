@@ -1,3 +1,5 @@
+alert("Script is running!");
+
 const locations = {
     "n": {
         "stages": 3,
