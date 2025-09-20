@@ -64,7 +64,7 @@ const locations = {
         "event_chance": 0.7,
         "end_event": "cave"
     }
-};_text
+};
 
 const endEvents = {
     "cabin": (game) => {
