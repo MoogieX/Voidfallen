@@ -486,12 +486,12 @@ class Exploration:
                 self.console.print("Invalid choice.")
 
         if self.game.alt_mode:
-            boss = {"name": "Azrael, the Unyielding", "hp": 9999, "attack": 999, "boss": True}
+            boss = {"name": "Azrael, Archangel of death", "hp": 9999, "attack": 999, "boss": True}
             azrael_battle = AzraelBattle(self.player, boss, self.game)
             azrael_battle.run()
             return # End exploration after this special battle
         else:
-            boss = {"name": "Ancient Dragon", "hp": 300, "attack": 30, "boss": True}
+            boss = {"name": "Ancient Dragon", "hp": 1000 "attack": 30, "boss": True}
         
         result = self.game.battle(boss)
 
