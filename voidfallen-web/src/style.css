@@ -1,0 +1,122 @@
+:root {
+    --color-narration: #00ff00; /* Green */
+    --color-dialogue: #00ffff;  /* Cyan */
+    --color-combat: #ff0000;    /* Red */
+    --color-event: #ffff00;     /* Yellow */
+    --color-item: #ff00ff;      /* Magenta */
+    --color-location: #ffffff;  /* White */
+    --color-command: #b2b2b2;   /* Light Gray */
+    --color-error: #ff4444;     /* Light Red */
+    --color-success: #44ff44;   /* Light Green */
+    --color-warning: #ffaa00;   /* Orange */
+    --color-background: #000;
+    --color-text: #0f0;
+}
+
+body {
+    background-color: var(--color-background);
+    color: var(--color-text);
+    font-family: 'Courier New', Courier, monospace;
+    font-size: 16px;
+}
+
+#terminal {
+    padding: 10px;
+    width: 100%;
+    height: 100vh;
+    box-sizing: border-box;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+}
+
+#output {
+    white-space: pre-wrap; /* Allows text to wrap */
+    overflow-y: auto; /* Adds scrollbar if content overflows */
+    flex-grow: 1;
+}
+
+.input-line {
+    display: flex;
+}
+
+.prompt {
+    margin-right: 10px;
+}
+
+#command-input {
+    background-color: transparent;
+    border: none;
+    color: var(--color-text);
+    font-family: 'Courier New', Courier, monospace;
+    font-size: 16px;
+    width: 100%;
+    outline: none;
+}
+
+/* New and updated text styles */
+.narration-text {
+    color: var(--color-narration);
+}
+
+.dialogue-text {
+    color: var(--color-dialogue);
+}
+
+.combat-text {
+    color: var(--color-combat);
+}
+
+.event-text {
+    color: var(--color-event);
+}
+
+.item-text {
+    color: var(--color-item);
+}
+
+.location-text {
+    color: var(--color-location);
+}
+
+.command-text {
+    color: var(--color-command);
+}
+
+.error-text {
+    color: var(--color-error);
+    font-weight: bold;
+}
+
+.success-text {
+    color: var(--color-success);
+}
+
+.warning-text {
+    color: var(--color-warning);
+}
+
+/* Old classes for backward compatibility, mapping to new ones */
+.narrative {
+    color: var(--color-narration);
+}
+
+.dialogue {
+    color: var(--color-dialogue);
+}
+
+.combat {
+    color: var(--color-combat);
+}
+
+.event {
+    color: var(--color-event);
+}
+
+.location {
+    color: var(--color-location);
+}
+
+.command {
+    color: var(--color-command);
+}
