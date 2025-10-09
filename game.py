@@ -1,24 +1,25 @@
 import json
 import os
 import random
+import time
 from typing import Dict
 from rich.console import Console
 
 from exploration import Exploration
 
-SAVE_FILE = "save.json"
+SAVE_FILE = "save..json"
 console = Console()
 
 
 def ask_yes_no(prompt: str) -> bool:
-    """Prompt the player for a yes/no answer and return True for yes."""
+    """Prompt the player for a yes/no answer. And for the insane folks who only use CAPSLOCK here you go"""
     while True:
         resp = input(f"{prompt} (yes/no) ").strip().lower()
-        if resp in ("yes", "y"):
+        if resp in ("yes", "y", "YES", "Y", "YEAH", "Yeah", "yeah", "Yes", "Ye", "ye", "YE"):
             return True
-        if resp in ("no", "n"):
+        if resp in ("no", "n", "NO", "nah", "NAH", "NOPE", "nope", "Nope", "No", "N"):
             return False
-        console.print("Please answer yes or no.")
+        console.print("Invalid respose")
 
 
 from player import Player
@@ -60,14 +61,14 @@ class Game:
                 json.dump(self.player.to_dict(), f, indent=2)
             console.print("💾 Game saved!")
         except (IOError, OSError) as e:
-            console.print(f"❌ Error saving game: {e}. Check file permissions or disk space.")
+            console.print(f"❌ Error saving game: {e}. WOMP WOMP, make sure you have permisions enabled, or unless you are a noob with no disk space. Either way you should not be seeing this.")
         except Exception as e:
-            console.print(f"❌ An unexpected error occurred while saving: {e}")
+            console.print(f"❌ ERROR LOADING GAME, please flag as a bug: {e}")
 
     def load_game(self) -> bool:
         """Loads the game state from a JSON save file."""
         if not os.path.exists(SAVE_FILE):
-            console.print("⚠ No save file found.")
+            console.print("⚠ WOMP WOMP no saves on record.")
             return False
         try:
             with open(SAVE_FILE, "r") as f:
@@ -76,13 +77,13 @@ class Game:
             console.print("✅ Game loaded successfully!")
             return True
         except (IOError, OSError) as e:
-            console.print(f"❌ Error reading save file: {e}. The file might be corrupted or inaccessible.")
+            console.print(f"❌ Error reading save file: {e}. The file might be corrupted or inaccessable, this could be due to swapping between game versions or another error.")
             return False
         except json.JSONDecodeError as e:
             console.print(f"❌ Error decoding save file: {e}. The save file is corrupted.")
             return False
         except Exception as e:
-            console.print(f"❌ An unexpected error occurred while loading: {e}")
+            console.print(f"❌ An unexpected error occurred while loading, please contact the boogie with this bug: {e}")
             return False
 
     def export_player_data(self) -> None:
@@ -93,7 +94,7 @@ class Game:
                 json.dump(self.player.to_dict(), f, indent=2)
             console.print(f"Player data exported to {export_file}!")
         except (IOError, OSError) as e:
-            console.print(f"❌ Error exporting player data: {e}. Check file permissions or disk space.")
+            console.print(f"❌ Error exporting player data: {e}. WOMP WOMP check file permisions, or unless you are a noob with no disk space. Either way you shouldn't see this")
         except Exception as e:
             console.print(f"❌ An unexpected error occurred while exporting: {e}")
 
@@ -150,40 +151,10 @@ class Game:
         # You can add more interactive elements or choices here if you wish.
 
         # After the new intro, we can proceed to the name input from the original intro
-        self.player.name = input("Hello lost one, what is your name? ").strip()
+        self.player.name = input("A brief memory flashes by... 'Lost one, do you remember your name?' ").strip()
         if self.player.name.lower() == "moogietheboogie":
             self.developer_mode = True
-            console.print("✨ Developer mode activated! Welcome back #001 ✨")
-        console.print(f"Interesting name you have... {self.player.name}")
-
-        self.player.backstory = input(
-            "'Where did you come from? This must be a blessing for my calls for... Nevermind'"
-            "'Tis' not often we have visitors here in this sect of the void.'"
-        ).strip()
-        console.print(
-            f"Ah... {self.player.backstory}. It is a place I am yet to visit, though it is much beautiful from what I hear."
-            f"You must have come a long way from there, {self.player.name}... Do you ever plan to go home?"
-        )
-
-        if ask_yes_no("'Care to sit down with me? Surely you must be frazzled after such a journey'"):
-            console.print("'Very well then.' The figure moves aside for you to join them")
-        else:
-            console.print("'That's alright, just stay to talk, if you will.'")
-
-        if ask_yes_no(f"Say, {self.player.name}, have you heard what has been happening here"):
-            console.print(
-                "So you are aware, how peculiar... Then, "
-                f"{self.player.name}, there is an old trail up to the East. "
-                "You may find an inn where you can stay."
-            )
-        else:
-            console.print(
-                "Not that I would have expected you to. "
-                "There are creatures from the north, they have been encroaching on our void... "
-                "Slaughtering the residents."
-            )
-
-        console.print("\nYou leave the clearing after giving thanks to the figure, onwards you shall go...\n")
+            console.print("✨ ~~~Developer mode activated, for the second time~~~ ✨")
 
     def _astar_intro(self):
         console.print("\n--- A New Beginning ---")
@@ -232,10 +203,10 @@ class Game:
             self.console.print(f"Spawning custom boss: {boss_name}")
         elif self.alt_mode:
             boss = {"name": "Azrael, the Death Angel", "hp": 9999, "attack": 999, "boss": True}
-            self.console.print("Spawning Azrael, the Death Angel.")
+            self.console.print("Azrael, archangel of death approaches...")
         else:
             boss = {"name": "Ancient Dragon", "hp": 300, "attack": 30, "boss": True}
-            self.console.print("Spawning Ancient Dragon.")
+            self.console.print("The Ancient Dragon approaches...")
         
         self.battle(boss)
 
@@ -256,7 +227,7 @@ class Game:
                 console.print("Difficulty set to Hard.")
                 break
             else:
-                console.print("Invalid choice. Type: easy, normal, or hard.")
+                console.print("Invalid choice or unadded/unknown difficulty")
 
     def scale_enemy(self, act=None, cavern=False, rare=False, volcano=False) -> Dict[str, int]:
         lvl = self.player.level
@@ -280,7 +251,7 @@ class Game:
                 atk_scale = 3
             elif act == 2 or (act is None and self.act == 2):
                 enemy_list = [
-                    "Guarded Soul", "The Forgotten", "Hollow Priest", "Bleeding Idol", "The Feasting"
+                    "Guarded Soul", "The Forgotten", "Hollow heart", "Bleeding Idol", "The Feasting"
                 ]
                 base_hp = 50
                 base_attack = 18
@@ -352,9 +323,7 @@ class Game:
             self.player.gain_gold(gold_gain)
             battle_instance.handle_drops()
             self.save_game()
-            # Only show crafting menu if NOT in cavern
-            if not cavern:
-                self.crafting_menu()
+            
         elif result == "lost":
             if enemy.get("boss"):
                 self._create_astar_save()
@@ -425,7 +394,7 @@ class Game:
             self.player.bleed_turns = 0
             console.print("You use a bandage and cure all bleeding and poison effects!")
         else:
-            console.print(f"You don't have {item_name} or it's not usable from here.")
+            console.print(f"You don't have {item_name} or it's not usable in this location.")
 
     def _handle_inventory_equip(self, args: str):
         parts = args.split(maxsplit=1)
@@ -462,12 +431,12 @@ class Game:
         elif item_type == "pet":
             if self.player.pet:
                 self.player.add_item(self.player.pet) # Add to inventory
-                console.print(f"You unequipped {self.player.pet}.")
+                console.print(f"You unequipped {self.player.pet}. How dare you?")
                 self.player.pet = None
             else:
                 console.print("You have no pet equipped.")
         else:
-            console.print("Invalid unequip type. Use 'armor', 'tool', or 'pet'.")
+            console.print("Invalid equip usage")
 
     def _handle_refuel_lantern(self):
         if self.player.inventory.get("Animal Fat", 0) > 0:
@@ -515,7 +484,7 @@ class Game:
         events.append({"chance": 0.08, "handler": self._handle_chest_event})
 
         # 2% chance: find a pet
-        events.append({"chance": 0.10, "handler": self._handle_pet_event})
+        events.append({"chance": 0.02, "handler": self._handle_pet_event})
 
         # Rare cavern enemies in Act 2 overworld
         if self.act == 2:
@@ -1000,12 +969,12 @@ class Game:
 if __name__ == "__main__":
     game = Game()
     console.print("Welcome to Voidfallen! A game by yours truly. -Moogietheboogie")
-    console.print("\nMain Menu Options:")
-    console.print("  Start a new game")
-    console.print("  Load a saved game")
-    console.print("  Export player data")
-    console.print("  Options- game difficulty")
-    console.print("  Exit the game")
+    console.print("\n~~~Main Menu~~~:")
+    console.print("  ~~~Start a new game~~~")
+    console.print("  ~~~Load a saved game~~~")
+    console.print("  ~~~Export player data~~~")
+    console.print("  ~~~Options~~~")
+    console.print("  ~~~Exit~~~")
     while True:
         console.print("\nWhat would you like to do? (new game, load game, export data, options, quit)")
         choice = input("Type your choice: ").strip().lower()
@@ -1015,7 +984,7 @@ if __name__ == "__main__":
                 # Reset player to default and skip intro
                 game.player = Player(game.console)
                 # Prompt for username
-                game.player.name = input("Enter your name, lost one: ").strip()
+                game.player.name = input("Enter your name:").strip()
                 if not game.player.name:
                     game.player.name = "traveler"
                 if game.player.name.lower() == "moogietheboogie":
@@ -1041,7 +1010,7 @@ if __name__ == "__main__":
         elif choice == "options":
             game.set_difficulty()
         elif choice == "quit" or "exit" in choice:
-            console.print("Thanks for playing the demo!")
+            console.print("Thanks for playing Voidfallen!~~~")
             break
         else:
             console.print("Invalid choice")
