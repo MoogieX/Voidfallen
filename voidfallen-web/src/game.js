@@ -4,7 +4,6 @@ import Battle from './battle.js';
 import { locations, endEvents } from './locations.js';
 import Exploration from './exploration.js'; // Import Exploration
 
-// --- Game Class ---
 class Game {
     constructor() {
         this.player = new Player();
@@ -56,7 +55,7 @@ class Game {
                         if (endEvent) {
                             endEvent(this);
                         } else {
-                            printToTerminal("You have reached the end of the path.", 'location');
+                            printToTerminal("You have reached the end of this path, there is nowhere else for you to go past here.", 'location');
                             this.state = 'playing';
                             this.showLocation();
                         }
@@ -255,7 +254,7 @@ class Game {
                 printToTerminal("You leave the village and return to the crossroads.", 'narrative');
                 this.showLocation(); // You'll need to implement showLocation
             } else {
-                printToTerminal("Invalid command in the village.", 'dialogue');
+                printToTerminal("Invalid command.", 'dialogue');
             }
         }
 
@@ -336,7 +335,7 @@ class Game {
                 this.difficulty = newDifficulty;
                 printToTerminal(`Difficulty set to ${newDifficulty.toUpperCase()}.`, 'event');
             } else {
-                printToTerminal("Invalid difficulty. Choose from easy, normal, hard.", 'dialogue');
+                printToTerminal("Invalid command, or difficulty not added.", 'dialogue');
             }
         }
 
@@ -472,7 +471,7 @@ class Game {
                 this.ask_yes_no(`Do you want to equip the ${full_tool_name}?`, `equip_tool_${full_tool_name.replace(/ /g, '_')}`);
             } else {
                 this.player.addItem(chosen_loot_type);
-                printToTerminal(`You find a hidden chest! Inside is 1 ${chosen_loot_type}.`, 'event');
+                printToTerminal(`You find a hidden chest! Inside is a ${chosen_loot_type}.`, 'event');
             }
             this.saveGame();
         }
@@ -547,7 +546,7 @@ class Game {
                 this.state = 'playing';
                 this.showLocation();
             } else {
-                printToTerminal("Invalid crafting command.", 'dialogue');
+                printToTerminal("Invalid command.", 'dialogue');
             }
         }
 
@@ -588,7 +587,7 @@ class Game {
             } else if (cmd === 'save') {
                 this._dev_save();
             } else {
-                printToTerminal("Unknown command.", 'dialogue');
+                printToTerminal("Unknown or invalid command.", 'dialogue');
             }
         }
 
@@ -775,7 +774,7 @@ class Game {
                 return;
             }
             if (this.player.lantern_fuel <= 0) {
-                printToTerminal("Your lantern is out of fuel. Find animal fat to refuel your lantern.", 'dialogue');
+                printToTerminal("Your lantern is out of fuel. Find something you can burn to refil it", 'dialogue');
                 return;
             }
             if (!this.player.lantern_on) {
@@ -855,7 +854,7 @@ class Game {
                 if (this.volcano_progress >= this.max_ascent) {
                     let boss;
                     if (this.alt_mode) {
-                        boss = { name: "Azrael, the Unyielding", hp: 9999, attack: 999, boss: true };
+                        boss = { name: "Azrael, Angel of death", hp: 9999, attack: 999, boss: true };
                     } else {
                         boss = { name: "Ancient Dragon", hp: 300, attack: 30, boss: true };
                     }
@@ -864,7 +863,7 @@ class Game {
                     if (this.player.hp > 0) {
                         printToTerminal(this.alt_text(
                             `With a final, earth-shattering roar, the ${boss.name} collapses!`,
-                            `The ${boss.name} shrieks and dissolves into ash and embers.`
+                            `ERROR ${boss.name} is undefeatable, please flag this as a bug in github if you do manage this game phase.`
                         ), 'event');
                         printToTerminal("You have conquered the volcano!", 'event');
                         printToTerminal("You are rewarded with 1000 EXP and 500 gold!", 'event');
@@ -885,7 +884,7 @@ class Game {
                 }
             } else if (command === 'leave') {
                 this.state = 'playing';
-                printToTerminal("You carefully climb back down, leaving the volcano for another day.", 'narrative');
+                printToTerminal("You carefully climb back down, leaving the volcano for your future self to deal with.", 'narrative');
                 this.showLocation();
             } else {
                 printToTerminal("Invalid command.");
@@ -899,7 +898,7 @@ class Game {
                 this.state = 'main_menu';
                 printToTerminal("Returning to main menu.", 'narrative');
             } else {
-                printToTerminal("Invalid difficulty. Choose from easy, normal, hard.", 'dialogue');
+                printToTerminal("Invalid or unadded difficulty.", 'dialogue');
             }
         }
         
@@ -907,7 +906,7 @@ class Game {
             if (command === 'new game') {
                 this.player = new Player(); // Reset player for new game
                 this.state = 'intro_skip_prompt';
-                printToTerminal("Would you like to skip the intro dialog? (yes/no)", 'dialogue');
+                printToTerminal("Would you like to skip the intro? (NOTE: DO NOT SKIP IF IT IS YOUR FIRST TIME PLAYING)", 'dialogue');
             } else if (command === 'load game') {
                 if (this.loadGame()) {
                     this.state = 'playing';
@@ -917,7 +916,7 @@ class Game {
                 this.state = 'options';
                 printToTerminal("Choose a difficulty: easy, normal, hard", 'dialogue');
             } else if (command === 'quit') {
-                printToTerminal("Thanks for playing!", 'event');
+                printToTerminal("Womp Womp", 'event');
             } else {
                 printToTerminal("Invalid command.");
             }
@@ -938,12 +937,12 @@ class Game {
     // Initial game start
     game.start = () => {
         printToTerminal("Welcome to Voidfallen! A game by yours truly. -Moogietheboogie", 'event');
-        printToTerminal("\nMain Menu Options:", 'narrative');
-        printToTerminal("  Start a new game", 'narrative');
-        printToTerminal("  Load a saved game", 'narrative');
-        printToTerminal("  Options - game difficulty", 'narrative');
-        printToTerminal("  Quit the game", 'narrative');
-        printToTerminal("\nWhat would you like to do? (new game, load game, options, quit)", 'dialogue');
+        printToTerminal("\n~~~MENU~~~", 'narrative');
+        printToTerminal("  ~~~Start a new game~~~", 'narrative');
+        printToTerminal("  ~~~Load a saved game~~~", 'narrative');
+        printToTerminal("  ~~~Options - game difficulty~~~", 'narrative');
+        printToTerminal("  ~~~Quit the game~~~", 'narrative');
+        printToTerminal("\nWhat would you like to do?", 'dialogue');
         commandInput.focus();
     };
 
@@ -956,9 +955,9 @@ class Game {
                             } else if (command === 'no') {
                                 // Proceed with full intro
                                 game.state = 'intro_name';
-                                printToTerminal("Hello lost one, what is your name?", 'dialogue');
+                                printToTerminal("Another lost soul... Tell me lost one, do you remember your name?", 'dialogue');
                             } else {
-                                printToTerminal("Please answer yes or no.", 'dialogue');
+                                printToTerminal("Invalid input", 'dialogue');
                             }
                         } else if (game.state === 'intro_name') {
                             game.player.name = command;
@@ -968,7 +967,7 @@ class Game {
                             }                    if (game.player.name.toLowerCase() === "moogietheboogie") {
                         game.developer_mode = true;
                         printToTerminal("✨ Developer mode activated! Welcome back #001 ✨", 'event');
-                    }            printToTerminal(`Interesting name you have... ${game.player.name}`, 'dialogue');
+                    }            printToTerminal(`How interesting... ${game.player.name}, correct?`, 'dialogue');
             printToTerminal("'Where did you come from? This must be a blessing for my calls for... Nevermind'", 'dialogue');
             printToTerminal("'Tis' not often we have visitors here in this sect of the void.'", 'dialogue');
             game.state = 'intro_backstory';
@@ -989,7 +988,7 @@ class Game {
         } else if (game.state === 'intro_aware_response') {
             if (command === 'yes') {
                 printToTerminal("So you are aware, how peculiar... Then, ", 'dialogue');
-                printToTerminal(`${game.player.name}, there is an old trail up to the East. You may find an inn where you can stay.`, 'dialogue');
+                printToTerminal(`${game.player.name}, there is an old trail up to the East. You may find an village where you can stay.`, 'dialogue');
             } else {
                 printToTerminal("Not that I would have expected you to. There are creatures from the north, they have been encroaching on our void... Slaughtering the residents.", 'dialogue');
             }
