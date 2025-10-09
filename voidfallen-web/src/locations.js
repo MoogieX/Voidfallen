@@ -29,7 +29,7 @@ export const locations = {
         "stages": 3,
         "intro_text": {
             "normal": "You follow the path east. An ancient stone stands here, humming with strange energy.",
-            "alt": "You follow the path east. The stone sits there, shattered as if hit by a force beyond humanity. It is weak."
+            "alt": "You follow the path east. The stone sits there, shattered as if hit by a force beyond humanity."
         },
         "stage_text": {
             "normal": "The humming of the stone grows louder.",
@@ -68,11 +68,11 @@ export const locations = {
         "stages": 3,
         "intro_text": {
             "normal": "You follow a path towards the coast, the sound of waves growing louder.",
-            "alt": "The coastline is littered with the skeletons of great sea creatures."
+            "alt": "The ocean is red, amost with what looks like blood..."
         },
         "stage_text": {
             "normal": "The salty air whips your face as you walk along the beach.",
-            "alt": "The waves are black and oily, leaving a residue on the sand."
+            "alt": "The waves are thick and red, leaving stains on the sand."
         },
         "event_chance": 0.4,
         "end_event": "shipwreck"
@@ -81,7 +81,7 @@ export const locations = {
         "stages": 4,
         "intro_text": {
             "normal": "The path leads you into the foothills of a mountain range.",
-            "alt": "The mountains are jagged and cruel, like broken teeth against the sky."
+            "alt": "The mountains are cracked and broken, much like what was once a roaring volcano."
         },
         "stage_text": {
             "normal": "The climb is steep, but the view is breathtaking.",
@@ -148,7 +148,7 @@ export const endEvents = {
     "cabin": (game) => {
         game.state = 'awaiting_input';
         game.nextState = 'cabin_enter';
-        game.print("You find a small cabin. Do you enter? (yes/no)", 'location');
+        game.print("You find a small cabin. Do you enter?", 'location');
     },
     "cabin_enter": (game, command) => {
         if (['y', 'yes'].includes(command)) {
@@ -172,14 +172,14 @@ export const endEvents = {
     "village_entrance": (game) => {
         game.print("You arrive at the village entrance.", 'location');
         // In a more complete version, this would transition to the village state
-        game.print("(Village not yet implemented)");
         game.state = 'playing';
         game.showLocation();
     },
     "village": (game) => {
-        game.state = 'village';
         game.print("You are in the village square. What would you like to do?");
+        game.state = 'village';
         game.print("Options: shop, rest, leave");
+        game.showLocation();
     },
     "hidden_spring": (game) => {
         game.state = 'awaiting_input';
@@ -211,7 +211,7 @@ export const endEvents = {
     },
     "swamp_chest_open": (game, command) => {
         if (['y', 'yes'].includes(command)) {
-            game.print(game.alt_text("Inside, you find a handful of old coins and a rare gem!", "The locket contains a faded portrait of a smiling child. You feel a deep sense of loss."), 'event');
+            game.print(game.alt_text("Inside, you find a handful of old coins and a rare gem!", "The locket contains a faded portrait of a smiling child. Another soul lost."), 'event');
             game.player.coins.gold += 25;
             game.player.addItem("Rare Gem");
             game.saveGame();
@@ -279,7 +279,7 @@ export const endEvents = {
             }
             game.saveGame();
         } else {
-            game.print(game.alt_text("You decide the oasis is just a mirage and turn back.", "You do not trust the mirage and turn away."), 'narrative');
+            game.print(game.alt_text("You decide the oasis is just a mirage and turn back.", "You do not trust the illusion and turn away."), 'narrative');
         }
         game.state = 'playing';
         game.showLocation();
