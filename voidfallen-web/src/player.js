@@ -32,12 +32,12 @@ class Player {
         if (this.poison_turns > 0) {
             this.take_damage(1);
             this.poison_turns--;
-            printToTerminal("Poison deals 1 damage to you!", 'combat');
+            printToTerminal("The poison sinks in... You lose 1HP", 'combat');
         }
         if (this.bleed_turns > 0) {
             this.take_damage(2);
             this.bleed_turns--;
-            printToTerminal("Bleeding deals 2 damage to you!", 'combat');
+            printToTerminal("You're bleeding, -2HP", 'combat');
         }
     }
 
@@ -46,7 +46,7 @@ class Player {
         // Auto-fuel lantern when first acquired
         if (name.toLowerCase() === "lantern" && this.lantern_fuel === 0) {
             this.lantern_fuel = 6;  // Base fuel value
-            printToTerminal("Your lantern is now fueled and ready to use! (6 turns of fuel)", 'event');
+            printToTerminal("Your lantern is now fueled! (6 turns of fuel)", 'event');
         }
     }
 
