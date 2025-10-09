@@ -106,11 +106,11 @@ class Game:
             self._astar_intro()
             return
 
-        self.player.name = input("Hello lost one, what is your name? ").strip()
+        self.player.name = input("Lost one... Do you remember your name? ").strip()
         if self.player.name.lower() == "moogietheboogie":
             self.developer_mode = True
             console.print("✨ Developer mode activated! Welcome back #001 ✨")
-        console.print(f"Interesting name you have... {self.player.name}")
+        console.print(f"Interesting name you have... {self.player.name}, most do not retain such memory.")
 
         self.player.backstory = input(
             "'Where did you come from? This must be a blessing for my calls for... Nevermind'"
@@ -126,17 +126,19 @@ class Game:
         else:
             console.print("'That's alright, just stay to talk, if you will.'")
 
-        if ask_yes_no(f"Say, {self.player.name}, have you heard what has been happening here"):
+        if ask_yes_no(f"Say, {self.player.name}, have you heard the rumors? (NOTE: DO NOT SAY YES IF YOU ARE NEW TO PLAYING)"):
             console.print(
                 "So you are aware, how peculiar... Then, "
                 f"{self.player.name}, there is an old trail up to the East. "
-                "You may find an inn where you can stay."
+                "You may find an inn where you can stay..."
             )
         else:
             console.print(
-                "Not that I would have expected you to. "
-                "There are creatures from the north, they have been encroaching on our void... "
-                "Slaughtering the residents."
+                "'Not that I would have expected you to. '"
+                "'There are creatures from the north, they have been encroaching on our void... '"
+                "'Slaughtering the residents. You must learn to survive..."
+                "You can ATTACK an enemy that comes near you... And RUN if you feel you won't survive... But i hope it does not come to that of course'"
+                "'And you can USE items in such situations as well, but be wary, and calculating of your actions {self.player.name}...'"
             )
 
         console.print("\nYou leave the clearing after giving thanks to the figure, onwards you shall go...\n")
@@ -161,8 +163,8 @@ class Game:
         console.print("You awaken within the field, of which you do not recognize.")
         console.print("An entity, the soft features that it once shown you, now hardened as they stare down at your form in the grass")
         console.print("'Lost one... That was something you never were, was it?...'")
-        console.print("'You did this.. All by playing with death...")
-        console.print(f"'I took you in with kindness, {system.username}'")
+        console.print("'You did this.. Why did you do this to us...?'")
+        console.print(f"'I took you in with kindness, {system.username}...'")
 
     def _create_astar_save(self):
         astar_data = {
@@ -191,7 +193,7 @@ class Game:
             with open(SAVE_FILE, "w") as f:
                 json.dump(astar_data, f, indent=2)
         except (IOError, OSError) as e:
-            console.print(f"❌ Error creating Astar save: {e}.")
+            console.print(f"❌ Error creating Astar save, please flag to github: {e}.")
 
     def _dev_boss(self, cmd: str):
         parts = cmd.split()
