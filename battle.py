@@ -48,7 +48,7 @@ class Battle:
                 break # Check if debuffs were fatal
 
             console.print(f"\nYour HP: {self.player.hp}/{self.player.max_hp} | Enemy HP: {self.enemy['hp']} ")
-            action = input("Do you (attack/use item/run)? ").strip().lower()
+            action = input("Do you (attack/use/run)? ").strip().lower()
 
             if action == "attack":
                 self._handle_player_attack()
@@ -65,7 +65,7 @@ class Battle:
                 # Enemy turn: check for flee, then attack
                 is_low_health = self.enemy['hp'] < self.enemy_max_hp * 0.2
                 if is_low_health and random.random() < 0.1:
-                    console.print(f"The {self.enemy['name']} is low on health and flees from the battle!")
+                    console.print(f"The {self.enemy['name']} flees! But you havhe the feeling this isn't the end.")
                     return "enemy_fled"
 
                 self._handle_enemy_attack()
@@ -76,14 +76,14 @@ class Battle:
         """Handles the player's attack action."""
         dmg = self.player.get_current_attack(self.game) + random.randint(0, 4)
         self.enemy["hp"] -= dmg
-        console.print(f"You strike the {self.enemy['name']} for {dmg} damage!")
+        console.print(f"You slash at the {self.enemy['name']} for {dmg}!")
         
         # Lifesteal for specific enemies if player is bleeding
         is_lifesteal_enemy = any(e in self.enemy["name"].lower() for e in self.bleed_inflictors + self.ghost_lifesteal)
         if self.enemy["hp"] > 0 and is_lifesteal_enemy and self.player.bleed_turns > 0:
             heal = 2
             self.enemy["hp"] += heal
-            console.print(f"{self.enemy['name']} absorbs {heal} HP from your bleeding!")
+            console.print(f"{self.enemy['name']} absorbs {heal} HP from your lifeblood!")
 
     def _handle_use_item(self):
         """Handles the player's 'use item' action."""
@@ -105,9 +105,9 @@ class Battle:
     def _handle_run(self) -> bool:
         """Handles the player's attempt to run from battle."""
         if random.random() < 0.5:
-            console.print("You escaped successfully!")
+            console.print("You have fled sucsessfuly, cheers to living another day!")
             return True
-        console.print("You failed to escape!")
+        console.print("You try to flee, but you are held back by the enemy encroaching")
         return False
 
     def _handle_enemy_attack(self):
@@ -140,7 +140,7 @@ class AzraelBattle(Battle):
         self.turns = 0
 
     def run(self) -> str:
-        console.print(f"You face the abyssal demon, Azrael. There is no escape.")
+        console.print(f"You face Azrael, Archangel of death itself. There is no escaping your fate now")
         
         while self.enemy["hp"] > 0 and self.player.hp > 0:
             self.turns += 1
@@ -153,7 +153,7 @@ class AzraelBattle(Battle):
                 break
 
             console.print(f"\nYour HP: {self.player.hp}/{self.player.max_hp} | Azrael's HP: ???")
-            action = input("Do you (attack/use item)? ").strip().lower()
+            action = input("What do you do?").strip().lower()
 
             if action == "attack":
                 self._handle_player_attack()
@@ -168,7 +168,7 @@ class AzraelBattle(Battle):
 
         if self.player.hp <= 0:
             self.game._create_astar_save()
-            console.print("You have been defeated... but your journey is not over.")
+            console.print("You have been defeated... but your journey is not over, not yet.")
             exit()
         
         return "won" # This should not be reachable
