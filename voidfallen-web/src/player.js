@@ -15,9 +15,9 @@ class Player {
         this.bleed_turns = 0;
         this.lantern_on = false;
         this.lantern_fuel = 0;
-        this.pet = null;
-        this.armor = null;
-        this.tool = null;
+        this.pet = "";
+        this.armor = "";
+        this.tool = "";
     }
 
     take_damage(amount) {
@@ -37,7 +37,7 @@ class Player {
         if (this.bleed_turns > 0) {
             this.take_damage(2);
             this.bleed_turns--;
-            printToTerminal("You're bleeding, -2HP", 'combat');
+            printToTerminal("You're bleeding... You lose 2HP.", 'combat');
         }
     }
 
@@ -69,7 +69,7 @@ class Player {
             printToTerminal("Your lantern is out of fuel!", 'dialogue');
             this.lantern_on = false;
         } else {
-            printToTerminal("You don't have a lantern.", 'dialogue');
+            printToTerminal("You check your belt, but you do not have lantern on you.", 'dialogue');
             this.lantern_on = false;
         }
     }
@@ -115,7 +115,7 @@ class Player {
             this.max_hp += 20;
             this.attack += 5;
             this.hp = this.max_hp;
-            printToTerminal(`You leveled up! You are now level ${this.level}.`, 'event');
+            printToTerminal(`You leveled up! You are at ${this.level} now.`, 'event');
         }
     }
 }
