@@ -1,0 +1,26 @@
+{
+  "name": "",
+  "backstory": "",
+  "hp": 100,
+  "max_hp": 100,
+  "exp": 0,
+  "level": 1,
+  "attack": 10,
+  "inventory": {
+    "Potion": 2
+  },
+  "coins": {
+    "gold": 10,
+    "silver": 0,
+    "bronze": 0,
+    "zinc": 0
+  },
+  "unlocked_rest": false,
+  "pet": null,
+  "armor": null,
+  "tool": null,
+  "lantern_on": false,
+  "lantern_fuel": 0,
+  "poison_turns": 0,
+  "bleed_turns": 0
+}

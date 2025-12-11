@@ -1,8 +1,9 @@
 
 from __future__ import annotations
 import random
+from libraries import Libraries
 from typing import Dict, TYPE_CHECKING
-
+lib = Libraries()
 if TYPE_CHECKING:
     from game import Game
     from battle import AzraelBattle
@@ -20,8 +21,8 @@ class Exploration:
                 "\nYou stand at the fracture. Where will you wander?"
             ))
             self.console.print(self.game.alt_text(
-                "Directions: n, ne, e, se, s, sw, w, nw",
-                "Directions: n, ne, e, se, s, sw, w, nw"
+                "North, Northeast, East, Southeast, South, Southwest, West, Northwest",
+                "North, Northeast, East, Southeast, South, Southwest, West, Northwest"
             ))
             if self.game.act == 1:
                 self.console.print(self.game.alt_text(
@@ -52,30 +53,32 @@ class Exploration:
             if self.game.developer_mode:
                 self.console.print("[DEV] Type 'dev' for developer commands.")
 
-            choice = input("Choose a direction: ").strip().lower()
+            # Present a selection menu (using lib.select) rather than raw input.
+            # We normalize to lowercase and keep explore_actions keys in lowercase
+            menu_options = [
+                "North", "Northeast", "East", "Southeast", "South", "Southwest", "West", "Northwest", "Craft", "Inventory", "Back", "Dev"
+            ]
+
+            choice = lib.select("━─┉┈◈ Choose a direction ◈┈┉─━", menu_options)
 
             explore_actions = {
-                "dev": self.game.developer_commands,
-                "craft": self.game.crafting_menu,
-                "inventory": self.game.inventory_menu,
-                "n": self._explore_n, "north": self._explore_n,
-                "ne": self._explore_ne, "northeast": self._explore_ne,
-                "e": self._explore_e, "east": self._explore_e,
-                "se": self._explore_se, "southeast": self._explore_se,
-                "s": self._explore_s, "south": self._explore_s,
-                "sw": self._explore_sw, "southwest": self._explore_sw,
-                "w": self._explore_w, "west": self._explore_w,
-                "nw": self._explore_nw, "northwest": self._explore_nw,
-                "village": self._explore_village,
-                "ruins": self._explore_ruins,
-                "cavern": self._explore_cavern,
-                "volcano": self._explore_volcano,
-                "back": self._explore_back,
+                "Dev": self.game.developer_commands,
+                "Craft": self.game.crafting_menu,
+                "Inventory": self.game.inventory_menu,
+                "North": self._explore_n, "north": self._explore_n,
+                "Northeast": self._explore_ne, "northeast": self._explore_ne,
+                "East": self._explore_e, "east": self._explore_e,
+                "Southeast": self._explore_se, "southeast": self._explore_se,
+                "South": self._explore_s, "south": self._explore_s,
+                "Southwest": self._explore_sw, "southwest": self._explore_sw,
+                "West": self._explore_w, "west": self._explore_w,
+                "Northwest": self._explore_nw, "northwest": self._explore_nw,
+                "Back": self._explore_back,
             }
 
             action = explore_actions.get(choice)
             if action:
-                if choice in ["n", "ne", "e", "se", "s", "sw", "w", "nw", "ruins"]:
+                if choice in ["North", "Northeast", "East", "Southeast", "South", "Southwest", "West", "Northwest"]:
                     result = action()
                     if result in ["lost_boss", "lost_normal"]:
                         return result
@@ -83,7 +86,7 @@ class Exploration:
                         traverse_result = self._traverse_path(result)
                         if traverse_result in ["lost_boss", "lost_normal"]:
                             return traverse_result
-                elif choice == "cavern":
+                elif choice == "Cavern":
                     result = self.game.cavern_explore()
                     if result in ["lost_boss", "lost_normal"]:
                         return result
@@ -103,9 +106,15 @@ class Exploration:
 
         while progress < max_progress:
             self.console.print(f"\nYou are {progress}/{max_progress} of the way along the path.")
-            choice = input("Do you (continue/leave)? ").strip().lower()
 
-            if choice == "continue":
+            continue_choices = [
+                "Continue",
+                "Leave"
+            ]
+            choices = lib.select("━─┉┈◈ Do you wish to continue down the path? ◈┈┉─━", continue_choices)
+
+
+            if choices == "Continue":
                 progress += 1
                 self.console.print(self.game.alt_text(path_data["stage_text"]["normal"], path_data["stage_text"]["alt"]))
                 
@@ -118,11 +127,11 @@ class Exploration:
                 if self.player.hp <= 0:
                     return
 
-            elif choice == "leave":
+            elif choices == "Leave":
                 self.console.print(self.game.alt_text("You turn back, leaving the path for another day.", "You retreat from the path."))
                 return
             else:
-                self.console.print("Invalid choice.")
+                self.console.print("Invalid choice. (THIS IS A BUG!!!!)")
 
         if path_data.get("end_event"):
             path_data["end_event"]()
@@ -144,10 +153,12 @@ class Exploration:
         return path_data
 
     def _n_end_event(self):
-        if self.game.ask_yes_no(self.game.alt_text(
-            "You find a small cabin. Do you enter?",
-            "You find the house that once belonged to you. Do you step inside?"
-        )):
+        self.console.print(self.game.alt_text(
+            "You find a small cabin in the backwoods...",
+            "You find the house that once belonged to you, where you and your friends once resided."
+        ))
+        choices = lib.select("━─┉┈◈ Do you enter the cabin? ◈┈┉─━", ["Yes", "No"])
+        if choices == "Yes":
             self.console.print(self.game.alt_text(
                 "Inside the cabin, you find a lantern. +1 Lantern",
                 "Inside, you find a flickering lantern. +1 Lantern"
@@ -183,7 +194,7 @@ class Exploration:
         ))
         if not self.game.random_event():
             self.console.print("You find a small pouch of gold.")
-            self.player.coins["gold"] += 15
+            self.player.coins["gold"] += 8
             self.game.save_game()
 
     def _explore_e(self):
@@ -216,7 +227,7 @@ class Exploration:
     def _e_end_event_village(self):
         self.console.print(self.game.alt_text(
             "You arrive at the village entrance.",
-            "The village beckons."
+            "Ashes lie in piles, smoke still lingering in the city"
         ))
         self.game.village()
 
@@ -229,7 +240,7 @@ class Exploration:
             },
             "stage_text": {
                 "normal": "The path is overgrown, but you press on.",
-                "alt": "The air grows heavy, and you feel watched."
+                "alt": "The air grows heavy, vines writhe on the ground and you feel watched."
             },
             "event_chance": 0.3,
             "end_event": self._nw_end_event
@@ -241,18 +252,25 @@ class Exploration:
             "You discover a hidden spring, its water shimmering with a faint light.",
             "You find a pool of black, oily liquid. It ripples, though there is no wind."
         ))
-        if self.game.ask_yes_no(self.game.alt_text("Do you drink from the spring?", "Do you touch the liquid?")):
-            self.console.print(self.game.alt_text(
+        spring_choices = [
+            "Yes",
+            "No"
+        ]
+        choices = lib.select(self.game.alt_text("━─┉┈◈ Drink from the spring? ◈┈┉─━", "━─┉┈◈ Touch the liquid? ◈┈┉─━"), spring_choices)
+
+
+        if choices == "Yes":
+            self.console.print(self.game.alt_text( #flag here for bug
                 "You feel invigorated. Your max HP has increased by 10!",
-                "A sharp pain shoots up your arm, but then fades, leaving you feeling... stronger. Your attack has increased by 2!"
+                "A sharp pain shoots up your arm, but then fades, leaving you feeling... stronger. Your attack has increased by 4!"
             ))
             if self.game.alt_mode:
-                self.player.attack += 2
+                self.player.attack += 4
             else:
                 self.player.max_hp += 10
                 self.player.hp += 10
             self.game.save_game()
-        else:
+        if choices == "No":
             self.console.print(self.game.alt_text("You decide to leave the spring untouched.", "You back away slowly."))
 
     def _explore_sw(self):
@@ -275,16 +293,23 @@ class Exploration:
         self.console.print(self.game.alt_text(
             "You find a half-submerged chest, covered in moss and algae.",
             "A skeletal hand emerges from the water, offering you a rusted locket."
+            
         ))
-        if self.game.ask_yes_no(self.game.alt_text("Do you open the chest?", "Do you take the locket?")):
+        chest_choices = [
+            "Yes",
+            "No"
+        ]
+        choices = lib.select(self.game.alt_text("━─┉┈◈ Open the chest? ◈┈┉─━", "━─┉┈◈ Take the locket? ◈┈┉─━"), chest_choices)
+        if choices == "Yes":
             self.console.print(self.game.alt_text(
                 "Inside, you find a handful of old coins and a rare gem!",
-                "The locket contains a faded portrait of a smiling child. You feel a deep sense of loss."
+                "The locket contains a faded portrait of a smiling child... Perhaps it was best to leave this alone."
             ))
+            
             self.player.coins["gold"] += 25
             self.player.add_item("Rare Gem")
             self.game.save_game()
-        else:
+        if choices == "No":
             self.console.print(self.game.alt_text("You leave the chest to the swamp.", "You let the hand sink back into the depths."))
 
     def _explore_se(self):
@@ -292,7 +317,7 @@ class Exploration:
             "stages": 3,
             "intro_text": {
                 "normal": "You follow a path towards the coast, the sound of waves growing louder.",
-                "alt": "The coastline is littered with the skeletons of great sea creatures."
+                "alt": "The coastline is littered with the skeletons of great sea creatures, oceans black like oil."
             },
             "stage_text": {
                 "normal": "The salty air whips your face as you walk along the beach.",
@@ -308,7 +333,12 @@ class Exploration:
             "You come across the wreckage of a ship, half-buried in the sand.",
             "A beached leviathan lies on the shore, its eye staring blankly at the sky."
         ))
-        if self.game.ask_yes_no(self.game.alt_text("Do you search the wreckage?", "Do you approach the leviathan?")):
+        something_choices = [
+            "Yes",
+            "No"
+        ]
+        choices =lib.select(self.game.alt_text("━─┉┈◈ Do you look through the wreakage? ◈┈┉─━", "━─┉┈◈ Do you approach the Leviathan? ◈┈┉─━"), something_choices)
+        if choices == "Yes":
             self.console.print(self.game.alt_text(
                 "You find a sturdy, iron-bound chest! Inside is a new piece of armor.",
                 "You find a strange, pulsating organ inside the creature. It seems to be a source of great power."
@@ -318,7 +348,7 @@ class Exploration:
             else:
                 self.player.add_item("Mariner's Armor")
             self.game.save_game()
-        else:
+        if choices == "No":
             self.console.print(self.game.alt_text("You leave the shipwreck to the sea.", "You give the dead creature a wide berth."))
 
     def _explore_ne(self):
@@ -342,7 +372,12 @@ class Exploration:
             "You find a small cave, a cool breeze flowing from its entrance.",
             "You find a crack in the mountainside, from which a faint, sickly light emanates."
         ))
-        if self.game.ask_yes_no(self.game.alt_text("Do you enter the cave?", "Do you squeeze through the crack?")):
+        crystal_choices = [
+            "Yes",
+            "No"
+        ]
+        choices = lib.select(self.game.alt_text("━─┉┈◈ Do you enter the cave? ◈┈┉─━", "━─┉┈◈ Do you make it past the wall? ◈┈┉─━"), crystal_choices)
+        if choices == "Yes":
             self.console.print(self.game.alt_text(
                 "Inside, you find a vein of glowing crystals. You carefully mine a few.",
                 "The light comes from a pulsating, fleshy mass. You cut a piece of it away."
@@ -350,9 +385,9 @@ class Exploration:
             if self.game.alt_mode:
                 self.player.add_item("Pulsating Shard")
             else:
-                self.player.add_item("Glowing Crystal")
+                self.player.add_item("Moonstone")
             self.game.save_game()
-        else:
+        if choices == "No":
             self.console.print(self.game.alt_text("You decide not to risk entering the cave.", "You back away from the unsettling light."))
 
     def _explore_s(self):
@@ -373,20 +408,25 @@ class Exploration:
 
     def _s_end_event(self):
         self.console.print(self.game.alt_text(
-            "You see a shimmering oasis in the distance.",
+            "You see shimmering water in the distance.",
             "You see a city of gold and diamond in the distance..."
         ))
-        if self.game.ask_yes_no(self.game.alt_text("Do you head towards the oasis?", "Do you approach the city?")):
+        desert_choices = [
+            "Yes",
+            "No"
+        ]
+        choices = lib.select(self.game.alt_text("━─┉┈◈ Do you approach the oasis? ◈┈┉─━", "━─┉┈◈ Do you enter the city? ◈┈┉─━"), desert_choices)
+        if choices == "Yes":
             self.console.print(self.game.alt_text(
                 "You find a pool of cool, clear water. You rest and recover your strength.",
-                "The city is a mirage, and you find only a single, wilting flower growing in the sand."
+                "The city is a mirage, and you find only a single, flower growing in the sand... And yet it thrives in this suffering."
             ))
             if self.game.alt_mode:
                 self.player.add_item("Black Lotus")
             else:
                 self.player.hp = self.player.max_hp
             self.game.save_game()
-        else:
+        if choices == "No":
             self.console.print(self.game.alt_text("You decide the oasis is just a mirage and turn back.", "You do not trust the mirage and turn away."))
 
     def _explore_village(self):
@@ -397,7 +437,7 @@ class Exploration:
             ))
             self.console.print(self.game.alt_text(
                 "A shopkeeper waves you over: 'Looking for supplies, traveler?'",
-                "A figure stands in the shop, face hidden. 'Looking for something you shattered?'"
+                "A figure stands in the shop, face hidden. 'Looking for something? Maybe it's the thing you broke in this world.'"
             ))
             self.player.unlocked_rest = True
             self.game.act = 2
@@ -450,7 +490,7 @@ class Exploration:
         if self.game.act != 2:
             self.console.print(self.game.alt_text(
                 "The way to the volcano is blocked.",
-                "The bleedingmountain denies you."
+                "The bleeding mountain denies you."
             ))
             return
 
@@ -464,9 +504,13 @@ class Exploration:
 
         while ascent_progress < max_ascent:
             self.console.print(f"\nYou are {ascent_progress}/{max_ascent} of the way up the volcano.")
-            choice = input("Do you (ascend/leave)? ").strip().lower()
+            volcano_choices = [
+                "Yes",
+                "No"
+            ]
+            choices = lib.select("━─┉┈◈ Do you continue to accend? ◈┈┉─━", volcano_choices).strip().lower()
 
-            if choice == "ascend":
+            if choices == "Yes":
                 ascent_progress += 1
                 self.console.print(self.game.alt_text(
                     "You continue your ascent, the heat growing more intense.",
@@ -476,7 +520,7 @@ class Exploration:
                     self.game.battle(self.game.scale_enemy(volcano=True))
                 if self.player.hp <= 0:
                     return
-            elif choice == "leave":
+            elif choices == "No":
                 self.console.print(self.game.alt_text(
                     "You carefully climb back down, leaving the volcano for another day.",
                     "You retreat from the bleeding mountain."
@@ -491,7 +535,7 @@ class Exploration:
             azrael_battle.run()
             return # End exploration after this special battle
         else:
-            boss = {"name": "Ancient Dragon", "hp": 1000 "attack": 30, "boss": True}
+            boss = {"name": "Ancient Dragon", "hp": 1000, "attack": 30, "boss": True}
         
         result = self.game.battle(boss)
 

@@ -2,11 +2,11 @@ from __future__ import annotations
 import random
 from typing import Dict, TYPE_CHECKING
 from rich.console import Console
-
 from player import Player
-
+from libraries import Libraries
 if TYPE_CHECKING:
     from game import Game
+lib = Libraries()   
 
 console = Console()
 
@@ -48,13 +48,20 @@ class Battle:
                 break # Check if debuffs were fatal
 
             console.print(f"\nYour HP: {self.player.hp}/{self.player.max_hp} | Enemy HP: {self.enemy['hp']} ")
-            action = input("Do you (attack/use/run)? ").strip().lower()
+            attack_menu = [
+                "✦Attack✦",
+                "✦Run✦",
+                "✦Inventory✦"
+            ]
 
-            if action == "attack":
+            action = lib.select("What will you do?", attack_menu)
+
+            if action == "✦Attack✦":
                 self._handle_player_attack()
-            elif action == "use item":
+            elif action == "✦Inventory✦":
+                self.player.display_inventory()
                 self._handle_use_item()
-            elif action == "run":
+            elif action == "✦Run✦":
                 if self._handle_run():
                     return "fled"
             else:

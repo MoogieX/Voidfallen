@@ -17,9 +17,9 @@ class Player:
         self.inventory: Dict[str, int] = {"Potion": 2}
         self.coins: Dict[str, int] = {"gold": 10, "silver": 0, "bronze": 0, "zinc": 0}
         self.unlocked_rest: bool = False
-        self.pet: str = None  # New: equipped pet
-        self.armor: str = None  # equipped armor
-        self.tool: str = None   # equipped tool
+        self.pet: str = None
+        self.armor: str = None
+        self.tool: str = None
         self.lantern_on: bool = False
         self.lantern_fuel: int = 0
         self.poison_turns: int = 0
@@ -163,7 +163,6 @@ class Player:
     def get_current_attack(self, game_instance: "Game") -> int:
         base_attack = self.attack
         if self.tool:
-            # Parse tier from tool name (e.g., "Rusty Sword")
             parts = self.tool.split(" ", 1)
             if len(parts) > 1:
                 tier_name = parts[0]
