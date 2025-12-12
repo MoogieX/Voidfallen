@@ -5,12 +5,12 @@ import time
 from typing import Dict
 from rich.console import Console
 from libraries import Libraries
-lib = Libraries()
 from exploration import Exploration
 SAVE_FILE = "save..json"
 console = Console()
 from player import Player
 from battle import Battle, AzraelBattle
+lib = Libraries()
 class Game:
    def __init__(self):
        random.seed()
@@ -77,7 +77,7 @@ class Game:
 
    def export_player_data(self) -> None:
        """Exports the current player data to a JSON file."""
-       export_file = "{pname}_export.json"
+       export_file = f"{self.player.name}_export.json"
        try:
            with open(export_file, "w") as f:
                json.dump(self.player.to_dict(), f, indent=2)
@@ -101,8 +101,8 @@ class Game:
            console.print("✨✦ Developer mode activated! Welcome back #001 ✦✨")
        console.print(f"Interesting name you have... {self.player.name}, most do not retain such memory.")
 
-       slow_type_font_color("Blue","'Where did you come from? This must be a blessing for my calls for... Nevermind'")
-       slow_type_font_color("Blue", "'Tis' not often we have visitors here in this sect of the void.'")
+       lib.slow_type_font_color("Blue","Fancy", "'Where did you come from? This must be a blessing for my calls for... Nevermind'")
+       lib.slow_type_font_color("Blue", "Fancy", "'Tis' not often we have visitors here in this sect of the void.'")
        input()
        self.player.backstory = input("'Before you came here, do you recall where you hailed from?' ").strip()
        print(f"Ah... {self.player.backstory}. It is a place I am yet to visit, though it is much beautiful from what I hear.")
@@ -156,7 +156,7 @@ class Game:
        console.print("An entity, the soft features that it once shown you, now hardened as they stare down at your form in the grass")
        console.print("'Lost one... That was something you never were, was it?...'")
        console.print("'You did this.. Why did you do this to us...?'")
-       console.print(f"'I took you in with kindness, {system.username}.'")
+       console.print(f"'I took you in with kindness, {self.player.name}.'")
 
 
    def _create_astar_save(self):
@@ -466,13 +466,19 @@ class Game:
 
    def _handle_refuel_lantern(self):
        if self.player.inventory.get("Animal Fat", 0) > 0:
-           qty = int(input("How much Animal Fat to use? ").strip())
-           if qty > 0 and self.player.inventory.get("Animal Fat", 0) >= qty:
-               self.player.inventory["Animal Fat"] -= qty
-               self.player.refuel_lantern(qty * 3) # Assuming 1 fat = 3 fuel
-               console.print(f"You used {qty} Animal Fat to refuel your lantern.")
-           else:
-               console.print("Invalid quantity or not enough Animal Fat.")
+        try:
+            qty_str = input("How much Animal Fat to use? ").strip()
+            if not qty_str: # Handle empty input
+                return
+            qty = int(qty_str)
+            if qty > 0 and self.player.inventory.get("Animal Fat", 0) >= qty:
+                self.player.inventory["Animal Fat"] -= qty
+                self.player.refuel_lantern(qty * 3) # Assuming 1 fat = 3 fuel
+                console.print(f"You used {qty} Animal Fat to refuel your lantern.")
+            else:
+                console.print("Invalid quantity or not enough Animal Fat.")
+        except ValueError:
+            console.print("Invalid input. Please enter a number.")
        else:
            console.print("You don't have any Animal Fat.")
 
@@ -963,10 +969,10 @@ class Game:
             "Yes",
             "No"
            ]
-           choices = select(self.alt_text(
+           choices = lib.select(self.alt_text(
                "━─┉┈◈ Do you want to use your lantern? ◈┈┉─━",
                "━─┉┈◈ Will you light your lantern and face your mistakes? ◈┈┉─━"
-           ))
+           ), lantern_ask)
            if choices == "Yes":
             self.player.use_lantern()
             return True
@@ -1063,113 +1069,98 @@ class Game:
 
 
 if __name__ == "__main__":
-   game = Game()
-   console.print("Version 1.2 (THIS IS AN SOMEWHAT UNSTABLE ALPHA BUILD! For developers and beta testers ONLY!")
-   lib.slow_type_font_color("Magenta", "Fancy", 'Welcome to Voidfallen! A game by yours truly. -Moogietheboogie✦✦✦')
-   
+    game = Game()
+    console.print("Version 1.2 (THIS IS AN SOMEWHAT UNSTABLE ALPHA BUILD! For developers and beta testers ONLY!")
+    lib.slow_type_font_color("Magenta", "Fancy", 'Welcome to Voidfallen! A game by yours truly. -Moogietheboogie✦✦✦')
 
-   menu_choices = [
-   "✦Start a new game✦",
-   "✦Load a saved game✦",
-   "✦Export player data✦",
-   "✦Options✦",
-   "✦Exit✦",
-   ]
+    menu_choices = [
+        "✦Start a new game✦",
+        "✦Load a saved game✦",
+        "✦Export player data✦",
+        "✦Options✦",
+        "✦Exit✦",
+    ]
 
-   choices = lib.select("━─┉┈◈ Main Menu ◈┈┉─━", menu_choices)
+    while True:
+        choices = lib.select("━─┉┈◈ Main Menu ◈┈┉─━", menu_choices)
+        if choices == "✦Start a new game✦":
+            intro_skip = [
+                "Yes",
+                "No"
+            ]
+            intro_choice = lib.select("━─┉┈◈ Would you like to skip the intro dialoge ? ◈┈┉─━", intro_skip)
 
-while True:
-    if choices == "✦Start a new game✦":
-        intro_skip = [
-            "Yes",
-            "No"
+            if intro_choice == "Yes":
+                # Reset player to default and skip intro
+                game.player = Player(game.console)
+                # Prompt for username
+                game.player.name = input("Enter your name:").strip()
+                if not game.player.name:
+                    game.player.name = "✦Traveler✦"
+                if game.player.name.lower() == "moogietheboogie":
+                    game.developer_mode = True
+                    lib.slow_type_font_color("Magenta", "Fancy", "✩✩✩Developer mode activated! Welcome back #001 ✩✩✩")
+                console.print(f"Welcome, {game.player.name}. Your journey begins...")
+                result = game.explore()
+                if result in ["lost_boss", "lost_normal"]:
+                    continue
+            elif intro_choice == "No":
+                game.new_intro()
+                result = game.explore()
+                if result in ["lost_boss", "lost_normal"]:
+                    continue
+        elif choices == "✦Load a saved game✦":
+            if game.load_game():
+                result = game.explore()
+                if result in ["lost_boss", "lost_normal"]:
+                    continue
+        elif choices == "✦Export player data✦":
+            game.export_player_data()
+        elif choices == "✦Options✦":
+            options(game)
+        elif choices == "✦Exit✦":
+            lib.slow_type_font_color("Magenta", "Fancy", "·̩̩̥͙＊*•̩̩͙✩•̩̩͙*˚Thank you for playing Voidfallen˚*•̩̩͙✩•̩̩͙*˚＊·̩̩̥͙")
+            break
+        else:
+            console.print("THERE WAS AN ERROR HERE! please flag to github")
+
+
+def options(game: Game):
+    lib.slow_type_font_color("Blue", "Fancy", "━─┉┈◈◉◈┈┉─━")
+    while True:
+        options_choices = [
+            "Music",
+            "Difficulty",
+            "Colorization",
+            "Fonts",
+            "Exit"
         ]
-        choices = lib.select("━─┉┈◈ Would you like to skip the intro dialoge ? ◈┈┉─━", intro_skip)
 
-        if choices == "Yes":
-            # Reset player to default and skip intro
-            game.player = Player(game.console)
-            # Prompt for username
-            game.player.name = input("Enter your name:").strip()
-            if not game.player.name:
-                game.player.name = "✦Traveler✦"
-            if game.player.name.lower() == "moogietheboogie":
-                game.developer_mode = True
-                lib.slow_type_font_color("Magenta", "Fancy", "✩✩✩Developer mode activated! Welcome back #001 ✩✩✩")
-            console.print(f"Welcome, {game.player.name}. Your journey begins...")
-            result = game.explore()
-            if result in ["lost_boss", "lost_normal"]:
-                continue
-            else:
-                break
-        elif choices == "No":
-            game.new_intro()
-            result = game.explore()
-            if result in ["lost_boss", "lost_normal"]:
-                continue
-            else:
-                break
-    elif choices == "✦Load a saved game✦":
-           if game.load_game():
-               result = game.explore()
-               if result in ["lost_boss", "lost_normal"]:
-                   continue
-           else:
-                break
-    elif choices == "✦Export player data✦":
-           game.export_player_data()
-    elif choices == "✦Options✦":
-           options()
-    elif choices == "✦Exit✦":
-           lib.slow_type_font_color("Magenta", "Fancy","·̩̩̥͙＊*•̩̩͙✩•̩̩͙*˚Thank you for playing Voidfallen˚*•̩̩͙✩•̩̩͙*˚＊·̩̩̥͙")
-           break
-    else:
-           console.print("THERE WAS AN ERROR HERE! please flag to github")
+        choices = lib.select("━─┉┈◈◉◈┈┉─━", options_choices)
 
+        if choices == "Music":
+            while True:
+                lib.slow_type("⭒☆━━━━━━━━━━━━━━━☆⭒")  # placeholder for slider
+                music_menu_choices = [
+                    "Sound effects",
+                    "BGM",
+                    "Exit"
+                ]
+                music_choice = lib.select("━─┉┈◈◉◈┈┉─━", music_menu_choices)
 
-def options():
-   lib.slow_type_font_color("Blue", "Fancy","━─┉┈◈◉◈┈┉─━")
-   while True:
-       options_choices = [
-           "Music",
-           "Difficulty",
-           "Colorization",
-           "Fonts",
-           "Exit"
-       ]
-      
-       choices = lib.select ("━─┉┈◈◉◈┈┉─━", options_choices)
+                if music_choice == "Exit":
+                    break
+                elif music_choice == "Sound effects":
+                    lib.slow_type_font_color("Blue", "Bold", "Sound effects are now off(note, this does nothing as of now)")
+                elif music_choice == "BGM":
+                    lib.slow_type_font_color("Blue", "Bold", "BGM is now off")
+        elif choices == "Difficulty":
+            game.set_difficulty()
 
+        # placeholder here
 
-       if choices == "Music":
-           while True:
-               lib.slow_type("⭒☆━━━━━━━━━━━━━━━☆⭒") #placeholder for slider
-               music_menu_choices = [
-                   "Sound effects",
-                   "BGM",
-                   "Exit"
-               ]
-               choices = lib.select("━─┉┈◈◉◈┈┉─━", music_menu_choices)
-
-
-               if choices == "Exit":
-                   options()
-               elif choices == "Sound effects":
-                   self.slow_type_font_color("Blue", "Bold", "Sound effects are now off(note, this does nothing as of now)")
-                   return
-               elif choices == "BGM":
-                   self.slow_type_font_color("Blue", "Bold", "BGM is now off")
-                   return
-       if choices == "Difficulty":
-           set_difficulty()
-           return
-
-
-       #placeholder here
-
-
-       if choices == "Exit":
-           return
+        elif choices == "Exit":
+            break
 
 
 
