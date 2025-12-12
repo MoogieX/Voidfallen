@@ -94,7 +94,7 @@ class Libraries:
         font_mapping = {
             "Fancy": self.FancyFont(),
             "Bold": self.BoldFont(),
-            "Glitch": self.GlitchFont()
+            "Glitch": self.GlitchFont(),
             "Monospace": self.MonospaceFont(),
             "Handwriting": self.HandwritingFont()
         }
@@ -161,7 +161,7 @@ class Libraries:
                 'F': '𝔽', 'G': '𝔾', 'H': 'ℍ', 'I': '𝕀', 'J': '𝕁',
                 'K': '𝕂', 'L': '𝕃', 'M': '𝕄', 'N': 'ℕ', 'O': '𝕆',
                 'P': 'ℙ', 'Q': 'ℚ', 'R': 'ℝ', 'S': '𝕊', 'T': '𝕋',
-                'U': '𝕌', 'V': '𝕍', 'W': '𝕎', 'X': '𝕏', 'Y': '𝕐', 'Z': '𝕏',
+                'U': '𝕌', 'V': '𝕍', 'W': '𝕎', 'X': '𝕏', 'Y': '𝕐', 'Z': 'ℤ',
                 'a': '𝕒', 'b': '𝕓', 'c': '𝕔', 'd': '𝕕', 'e': '𝕖',
                 'f': '𝕗', 'g': '𝕘', 'h': '𝕙', 'i': '𝕚', 'j': '𝕛',
                 'k': '𝕜', 'l': '𝕝', 'm': '𝕞', 'n': '𝕟', 'o': '𝕠',
@@ -190,7 +190,7 @@ class Libraries:
         def __init__(self):
             mapping = {
                 'A': '𝙰', 'B': '𝙱', 'C': '𝙲', 'D': '𝙳', 'E': '𝙴', 'F': '𝙵', 'G': '𝙶', 'H': '𝙷',
-                'I': '𝙸', 'J': '𝙹', 'K': '𝙺', 'L': '𝙻', 'M': '𝙼', 'N': '𝙽' 'O': '𝙾', 'P': '𝙿',
+                'I': '𝙸', 'J': '𝙹', 'K': '𝙺', 'L': '𝙻', 'M': '𝙼', 'N': '𝙽', 'O': '𝙾', 'P': '𝙿',
                 'Q': '𝚀', 'R': '𝚁', 'S': '𝚂', 'T': '𝚃', 'U': '𝚄', 'V': '𝚅', 'W': '𝚆', 'X': '𝚇',
                 'Y': '𝚈', 'Z': '𝚉', 'a': '𝚊', 'b': '𝚋', 'c': '𝚌', 'd': '𝚍', 'e': '𝚎', 'f': '𝚏',
                 'g': '𝚐', 'h': '𝚑', 'i': '𝚒', 'j': '𝚓', 'k': '𝚔', 'l': '𝚕', 'm': '𝚖', 'n': '𝚗',
@@ -228,7 +228,7 @@ class Libraries:
         font_mapping = {
             "Fancy": self.FancyFont(),
             "Bold": self.BoldFont(),
-            "Glitch": self.GlitchFont()
+            "Glitch": self.GlitchFont(),
             "Monospace": self.MonospaceFont(),
             "Handwriting": self.HandwritingFont()
         }
@@ -248,21 +248,3 @@ class Libraries:
             speed (float): The delay between each character in seconds (default is 0.1).
         """
         self.slow_type(text, speed=speed, color=color)
-    def slow_type_font(self, font_name: str, text: str, speed: float = 0.1):
-        """
-        Prints text to the console with a typing effect using the specified font.
-        Args:
-            font_name (str): The name of the font to use (e.g., "Fancy", "Bold", "Glitch").
-            text (str): The text to be printed.
-            speed (float): The delay between each character in seconds (default is 0.1).
-        """
-        font_mapping = {
-            "Fancy": self.FancyFont(),
-            "Bold": self.BoldFont(),
-            "Glitch": self.GlitchFont(),
-            "Monospace": self.MonospaceFont(),
-            "Handwriting": self.HandwritingFont()
-        }
-        font = font_mapping.get(font_name)
-        if font:
-            transformed_text = font.apply(text)
