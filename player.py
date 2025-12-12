@@ -24,6 +24,8 @@ class Player:
         self.lantern_fuel: int = 0
         self.poison_turns: int = 0
         self.bleed_turns: int = 0
+        # Track story flags / seen cutscenes for future references
+        self.seen_cutscenes: Dict[str, bool] = {}
 
     def to_dict(self) -> dict:
         """Converts the Player object's attributes to a dictionary for serialization."""
@@ -45,6 +47,7 @@ class Player:
             "lantern_fuel": self.lantern_fuel,
             "poison_turns": self.poison_turns,
             "bleed_turns": self.bleed_turns,
+            "seen_cutscenes": self.seen_cutscenes,
         }
 
     def from_dict(self, data: dict):
@@ -66,6 +69,9 @@ class Player:
         self.lantern_fuel = data.get("lantern_fuel", 0)
         self.poison_turns = data.get("poison_turns", 0)
         self.bleed_turns = data.get("bleed_turns", 0)
+
+        # cutscenes yayyy
+        self.seen_cutscenes = data.get("seen_cutscenes", {})
 
         # Ensure lantern fuel is set if player has a lantern but no fuel
         if self.inventory.get("Lantern", 0) > 0 and self.lantern_fuel == 0:
