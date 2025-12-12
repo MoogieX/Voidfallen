@@ -117,12 +117,12 @@ class Player:
     def use_lantern(self):
         if self.inventory.get("Lantern", 0) > 0 and self.lantern_fuel > 0:
             self.lantern_on = True
-            console.print("You light your lantern. The darkness recedes.")
+            self.console.print("You light your lantern. The darkness recedes.")
         elif self.inventory.get("Lantern", 0) > 0:
-            console.print("Your lantern is out of fuel!")
+            self.console.print("Your lantern is out of fuel!")
             self.lantern_on = False
         else:
-            console.print("You don't have a lantern.")
+            self.console.print("You don't have a lantern.")
             self.lantern_on = False
 
     def refuel_lantern(self, fat_units: int):
