@@ -107,6 +107,16 @@ class Exploration:
         while progress < max_progress:
             self.console.print(f"\nYou are {progress}/{max_progress} of the way along the path.")
 
+            # Check for stage-specific events
+            if "stage_events" in path_data:
+                for event in path_data["stage_events"]:
+                    if progress == event["stage"]:
+                        self.console.print(self.game.alt_text(event["intro_text"]["normal"], event["intro_text"]["alt"]))
+                        choices = lib.select("━─┉┈◈ What do you do? ◈┈┉─━", ["Yes", "No"])
+                        if choices == "Yes":
+                            event["handler"]()
+                        # If "No", just continue on
+
             continue_choices = [
                 "Continue",
                 "Leave"
@@ -148,9 +158,27 @@ class Exploration:
                 "alt": "You continue, the wind calls your name."
             },
             "event_chance": 0.4,
+            "stage_events": [
+                {
+                    "stage": 2,
+                    "intro_text": {
+                        "normal": "You see an old man huddled by a small fire. He looks up as you approach and asks, 'Spare a coin for a cold soul?'",
+                        "alt": "A hunched figure whispers from the shadows, 'Got any silver for the ferryman?'"
+                    },
+                    "handler": self._n_stage_2_event
+                }
+            ],
             "end_event": self._n_end_event
         }
         return path_data
+
+    def _n_stage_2_event(self):
+        self.console.print(self.game.alt_text(
+            "You toss the man a coin. He nods and says, 'Blessings of the old gods upon you, traveler. May your path be safe.' You feel a strange warmth spread through you.",
+            "You give the figure a silver coin. It rasps, 'The toll is paid. For now.' You feel a chill, but also a sense of protection."
+        ))
+        self.player.hp += 5
+        self.console.print("You gained 5 HP.")
 
     def _n_end_event(self):
         self.console.print(self.game.alt_text(
@@ -270,7 +298,7 @@ class Exploration:
                 self.player.max_hp += 10
                 self.player.hp += 10
             self.game.save_game()
-        if choices == "No":
+        elif choices == "No": # Changed to elif
             self.console.print(self.game.alt_text("You decide to leave the spring untouched.", "You back away slowly."))
 
     def _explore_sw(self):
@@ -508,9 +536,9 @@ class Exploration:
                 "Yes",
                 "No"
             ]
-            choices = lib.select("━─┉┈◈ Do you continue to accend? ◈┈┉─━", volcano_choices).strip().lower()
+            choice = lib.select("━─┉┈◈ Do you continue to accend? ◈┈┉─━", volcano_choices)
 
-            if choices == "Yes":
+            if choice == "Yes":
                 ascent_progress += 1
                 self.console.print(self.game.alt_text(
                     "You continue your ascent, the heat growing more intense.",
@@ -520,7 +548,7 @@ class Exploration:
                     self.game.battle(self.game.scale_enemy(volcano=True))
                 if self.player.hp <= 0:
                     return
-            elif choices == "No":
+            elif choice == "No":
                 self.console.print(self.game.alt_text(
                     "You carefully climb back down, leaving the volcano for another day.",
                     "You retreat from the bleeding mountain."
