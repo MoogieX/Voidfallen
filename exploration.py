@@ -53,18 +53,46 @@ class Exploration:
             if self.game.developer_mode:
                 self.console.print("[DEV] Type 'dev' for developer commands.")
 
-            # Present a selection menu (using lib.select) rather than raw input.
-            # We normalize to lowercase and keep explore_actions keys in lowercase
-            menu_options = [
-                "North", "Northeast", "East", "Southeast", "South", "Southwest", "West", "Northwest", "Craft", "Inventory", "Back", "Dev"
+            if self.game.act == 1:
+                act_1_menu_options = [
+                    "Village", "North", "East", "South", "West", "Inventory", "Back"
+                ]
+            act_2_menu_options = [
+                "Ruins", "Cavern", "Volcano", "North", "Northeast", "East", "Southeast", "South", "Southwest", "West", "Northwest", "Craft", "Inventory", "Back"
+            ]
+            act_4_menu_options = [
+                "Up", "Down", "North", "Northeast", "East", "Southeast", "South", "Southwest", "West", "Northwest", "Craft", "Inventory", "Back"
             ]
 
-            choice = lib.select("━─┉┈◈ Choose a direction ◈┈┉─━", menu_options)
+            dev_menu_options = [
+                "North", "Northeast", "East", "Southeast", "South", "Southwest", "West", "Northwest", "Craft", "Inventory", "Dev", "Back"
+            ]
 
+            # Build menu options dynamically based on act to ensure displayed
+            # options are actually selectable.
+            if self.game.act == 1:
+                menu_options = act_1_menu_options
+            elif self.game.act == 2 or self.game.act == 3:
+                menu_options = act_2_menu_options
+            elif self.game.act == 4:
+                menu_options = act_4_menu_options
+            else:
+                menu_options = ["North", "Northeast", "East", "Southeast", "South", "Southwest", "West", "Northwest", "Craft", "Inventory", "Back"]
+
+            # If developer mode enabled, add dev option at end
+            if self.game.developer_mode and "Dev" not in menu_options:
+                menu_options.append("Dev")
+
+            choices = lib.select("━─┉┈◈ Choose a direction ◈┈┉─━", menu_options)
+            
             explore_actions = {
                 "Dev": self.game.developer_commands,
                 "Craft": self.game.crafting_menu,
                 "Inventory": self.game.inventory_menu,
+                "Village": self._explore_village, "village": self._explore_village,
+                "Ruins": self._explore_ruins, "ruins": self._explore_ruins,
+                "Cavern": self._explore_cavern, "cavern": self._explore_cavern,
+                "Volcano": self._explore_volcano, "volcano": self._explore_volcano,
                 "North": self._explore_n, "north": self._explore_n,
                 "Northeast": self._explore_ne, "northeast": self._explore_ne,
                 "East": self._explore_e, "east": self._explore_e,
@@ -73,12 +101,14 @@ class Exploration:
                 "Southwest": self._explore_sw, "southwest": self._explore_sw,
                 "West": self._explore_w, "west": self._explore_w,
                 "Northwest": self._explore_nw, "northwest": self._explore_nw,
-                "Back": self._explore_back,
+                "Back": self._explore_back, "back": self._explore_back,
+                "Up": self._explore_up, "up": self._explore_up,
+                "Down": self._explore_down, "down": self._explore_down
             }
 
-            action = explore_actions.get(choice)
+            action = explore_actions.get(choices)
             if action:
-                if choice in ["North", "Northeast", "East", "Southeast", "South", "Southwest", "West", "Northwest"]:
+                if choices in ["North", "Northeast", "East", "Southeast", "South", "Southwest", "West", "Northwest"]:
                     result = action()
                     if result in ["lost_boss", "lost_normal"]:
                         return result
@@ -86,7 +116,7 @@ class Exploration:
                         traverse_result = self._traverse_path(result)
                         if traverse_result in ["lost_boss", "lost_normal"]:
                             return traverse_result
-                elif choice == "Cavern":
+                elif choices == "Cavern":
                     result = self.game.cavern_explore()
                     if result in ["lost_boss", "lost_normal"]:
                         return result
@@ -162,8 +192,8 @@ class Exploration:
                 {
                     "stage": 2,
                     "intro_text": {
-                        "normal": "You see an old man huddled by a small fire. He looks up as you approach and asks, 'Spare a coin for a cold soul?'",
-                        "alt": "A hunched figure whispers from the shadows, 'Got any silver for the ferryman?'"
+                        "normal": "A figure, with a heart of light and color, walks up to you, curious. 'Hello there!'",
+                        "alt": "A woman, sits by the road with a book. But she recoils at the sight of you."
                     },
                     "handler": self._n_stage_2_event
                 }
@@ -173,12 +203,54 @@ class Exploration:
         return path_data
 
     def _n_stage_2_event(self):
-        self.console.print(self.game.alt_text(
-            "You toss the man a coin. He nods and says, 'Blessings of the old gods upon you, traveler. May your path be safe.' You feel a strange warmth spread through you.",
-            "You give the figure a silver coin. It rasps, 'The toll is paid. For now.' You feel a chill, but also a sense of protection."
+        # If player hasn't seen this cutscene before, give a one-time reward
+        if not self.game.has_seen_cutscene("loris_intro"):
+            # One-time small reward: item + small heal
+            if self.game.alt_mode:
+                self.player.add_item("Diary")
+            else:
+                self.player.add_item("Curiosity's Essence")
+            self.player.hp = min(self.player.max_hp, self.player.hp + 5)
+            self.console.print(self.game.alt_text(
+                "You receive a curious token and feel slightly restored (+5 HP).",
+                "A scrap of memory lingers; you clutch a token. Pain eases slightly. (+5 HP)"
+            ))
+            # Persist the flag and save
+            self.game.mark_cutscene_seen("loris_intro")
+
+        lib.slow_type_font_color("Purple", "Monospace", self.game.alt_text(
+            "The figure blinks, 'I haven't seen you before... Who are you?'",
+            "She blinks, not sure what to make of you. As if she is digging into a hidden memory. 'I... What? No, no, no, no...'"
         ))
-        self.player.hp += 5
-        self.console.print("You gained 5 HP.")
+
+        loris_choices = ["Yes", "No"]
+        choices = lib.select(self.game.alt_text(
+            "━─┉┈◈ Do you answer with your real name? ◈┈┉─━",
+            "━─┉┈◈ Do you talk with her? ◈┈┉─━"
+        ), loris_choices)
+
+        if choices == "Yes":
+            lib.slow_type_font_color("Purple", "Monospace", self.game.alt_text(
+                f"'That's a beautiful name, {self.player.name}' she says, her bright figure softening in intensity ever so slightly",
+                "She shivers, her eyes unsure and frightened. 'I... I told you no! Like last time!' She runs off into the darkness, leaving her book behind."
+            ))
+
+        elif choices == "No":
+            lib.slow_type_font_color("Purple", "Monospace", self.game.alt_text(
+                "The figure of light nods, 'Well, it's nice to meet you, Alasdair? Safe travels!' She waves and dissapates into the wind.",
+                "She looks away, the mushroom on her head drooping ever so slightly, tears building in her eyes. 'I... I never thought you... I... Can't even muster up the words... But... Fuck you.' And she retreats back into the darkness."
+            ))
+
+            # Track visits consistently and based on game alternate mode
+            if not hasattr(self, "_loris_visit"):
+                self._loris_visit = 0
+            if not hasattr(self, "_light_visit"):
+                self._light_visit = 0
+
+            if self.game.alt_mode:
+                self._light_visit += 1
+            else:
+                self._loris_visit += 1
 
     def _n_end_event(self):
         self.console.print(self.game.alt_text(
@@ -435,7 +507,7 @@ class Exploration:
         return path_data
 
     def _s_end_event(self):
-        self.console.print(self.game.alt_text(
+        lib.slow_type(self.game.alt_text(
             "You see shimmering water in the distance.",
             "You see a city of gold and diamond in the distance..."
         ))
@@ -445,17 +517,203 @@ class Exploration:
         ]
         choices = lib.select(self.game.alt_text("━─┉┈◈ Do you approach the oasis? ◈┈┉─━", "━─┉┈◈ Do you enter the city? ◈┈┉─━"), desert_choices)
         if choices == "Yes":
-            self.console.print(self.game.alt_text(
+            lib.slow_type(self.game.alt_text(
                 "You find a pool of cool, clear water. You rest and recover your strength.",
                 "The city is a mirage, and you find only a single, flower growing in the sand... And yet it thrives in this suffering."
             ))
             if self.game.alt_mode:
+                lib.slow_type_font_color("Purple", "Bold", "This flower is quite strange.. But you take it with you regardless, feeling some kind of importance it holds.")
                 self.player.add_item("Black Lotus")
             else:
                 self.player.hp = self.player.max_hp
             self.game.save_game()
         if choices == "No":
             self.console.print(self.game.alt_text("You decide the oasis is just a mirage and turn back.", "You do not trust the mirage and turn away."))
+
+    def _explore_up(self):
+        path_data = {
+            "stages": 4,
+            "intro_text": {
+                "normal": "You fly higher into the sky, the air growing thin and cold.",
+                "alt": "You use the wings of the wind. But the bitter wind leaves frost crystals left on your skin."
+            },
+            "stage_text": {
+                "normal": "The flight is exausting, but the view is incredible.",
+                "alt": "Your wings are but meerly wax, but you press on regardless."
+            },
+            "event_chance": 0.6,
+            "end_event": self._up_end_event
+        }
+        return path_data
+    def _up_end_event(self):
+        self.console.print(self.game.alt_text(
+            "You reach a cloud, where the water particles are almost soft like feathers...",
+            "You reach a floating island, where the air is thin, and the place almost looks scorched. The sky is fractured as well, much like the ground below."
+        ))
+        plateau_choices = [
+            "Yes",
+            "No"
+        ]
+        choices = lib.select(self.game.alt_text("━─┉┈◈ Do you rest on the cloud? ◈┈┉─━", "━─┉┈◈ Do you touch the bleeding sky? ◈┈┉─━"), plateau_choices)
+        if choices == "Yes":
+            self.console.print(self.game.alt_text(
+                "You rest on the cloud, although it threatens to drop you, it shakily holds you where you can take flight once more. Your max HP has increased by 10!",
+                "You feel an odd ripple on your hand, where something attatches itself... Your attack has increased by 4!"
+            ))
+            if self.game.alt_mode:
+                self.player.attack += 4
+            else:
+                self.player.max_hp += 10
+                self.player.hp += 10
+            self.game.save_game()
+        if choices == "No":
+            self.console.print(self.game.alt_text("You decide not to rest and continue on.", "You step away from the bleeding sky."))
+#flag here for more work
+
+
+    def _explore_down(self):
+        path_data = {
+            "stages": 4,
+            "intro_text": {
+                "normal": "You descend into a dark chasm, the light fading as you go deeper.",
+                "alt": "You descend into the veins of the earth, the darkness swallowing all light, but thankfully you have your lantern."
+            },
+            "stage_text": {
+                "normal": "The air grows colder and damper as you go deeper.",
+                "alt": "The darkness is oppressive, and the walls almost feel... Watching."
+            },
+            "event_chance": 0.6,
+            "end_event": self._down_end_event
+        }
+        return path_data
+    def _down_end_event(self):
+        # If player is Astar (special save), show alt text; otherwise normal
+        is_astar = (self.player.name == "Astar")
+        if not is_astar:
+            self.console.print(self.game.alt_text(
+                "You reach the bottom of the chasm, where a pool of black sludge splashes against grimstone.",
+                "You reach the heart, where a pool of lava bubbles, but you can still push past."
+            ))
+        if is_astar:
+            lib.slow_type_font_color("Red", "Bold", "Welcome home.")
+
+
+        spring_choices = [
+            "Yes",
+            "No"
+        ]
+        choices = lib.select(self.game.alt_text("━─┉┈◈ Pɛʀֆɨֆȶ? ◈┈┉─━", "━─┉┈◈ Persist? ◈┈┉─━"), spring_choices)
+        if choices == "Yes":
+            self.console.print(self.game.alt_text(
+                "You push past the sludge, feeling as though...",
+                "...Something is walking your same path."
+            ))
+            if self.game.alt_mode:
+                self.player.attack += 4
+                self.game.save_game()
+                if self.game.act != 4:
+                    lib.slow_type_font_color("Red", "Bold", self.game.alt_text(
+                        "You wretch as you feel the liquid leave your body, and resurface",
+                    ))
+                    self._explore_heart()
+            else:
+                self.player.max_hp += 10
+                self.player.hp += 10
+                self._explore_heart()
+            self.game.save_game()
+        if choices == "No":
+            self.console.print(self.game.alt_text("You decide to leave the sludge untouched.", "You back away slowly."))
+
+
+    def _explore_heart(self):
+        path_data = {
+            "stages": 5,
+            "intro_text": {
+                "normal": "You venture into the heart of the world. The walls pulse with a strange energy.",
+                "alt": "You step into the heart. The walls pulse with a sickly light, and the air is thick with the scent of decay."
+            },
+            "stage_text": {
+                "normal": "The air is thick with danger and the unknown.",
+                "alt": "The air is thick with memory and regret."
+            },
+            "event_chance": 0.7,
+            "end_event": self._heart_end_event
+        }
+        return path_data
+
+    def _heart_end_event(self):
+        lib.slow_type_font_color("Red", "Bold", self.game.alt_text(
+            "You find...",
+            "Yourself, glancing through a mirror..."
+        ))
+    def _explore_past(self):
+        if self.game.act == 4:
+            self.game.past_explore()
+            self.game.act = 5
+            lib.slow_type_font_color("Red", "Bold", self.game.alt_text(
+                "━─┉┈◈ Act 5 ◈┈┉─━",
+                "━─┉┈◈ Act 5 ◈┈┉─━"
+            ))
+            lib.slow_type_font_color("Red", "Bold", self.game.alt_text(
+                "...Is there much to say?",
+                "...Is there much left to say?"
+            ))
+            lib.slow_type_font_color("Red", "Bold", self.game.alt_text(
+                "You touch the mirror, where your reflection stares back at you...",
+                "And you see a kinder version of yourself looking back."
+            ))
+            self.game.save_game()
+            lib.slow_type_font_color("Blue", "Bold", self.game.alt_text(
+                "And yet... Something feels different.",
+                "And yet... Something feels... Final"
+            ))
+            lib.slow_type_font_color("Red", "Bold", self.game.alt_text(
+                "...................................",
+                "..................................."
+            ))
+            lib.slow_type_font_color("Red", "Monospace", self.game.alt_text(
+                "You stand at the other side of the mirror, looking back as the darkness closes in... Yet it's calm this time",
+                "You stand at the other side of the mirror, looking back as the darkness recedes"
+            ))
+            lib.slow_type_font_color("Purple", "Monospace", self.game.alt_text(
+                "Yet even in this place, there will always be another side to face, another darker aspect",
+                "And you walk away, leaving your fears behind..."
+            ))
+            lib.slow_type_font_color("Purple", "Monospace", self.game.alt_text(
+                "..................................",
+                ".................................."
+            ))
+            lib.slow_type_font_color("Yellow", "Bold", self.game.alt_text(
+                "Yet no one will write your story for you.",
+                "You see your friends, they worried about you..."
+            ))
+            lib.slow_type_font_color("Red", "Glitch", self.game.alt_text(
+                "'And you still look yourself in the mirror, and see your reflection tinted with hate..."
+                "Your friends, family, they all love you. They never held grudges that you think they do..."
+            ))
+            lib.slow_type_font_color("Magenta", "Fancy", self.game.alt_text(
+                "'Imbrace your flaws, mistakes, and try to be a better person.'",
+                "You aren't a failure, or a monster, you are just... You."
+            ))
+            choices_final = [
+                "Become whole again",
+                "Become whole again"
+            ]
+            choices = lib.select(self.game.alt_text("━─┉┈◈ Do you step through the mirror? ◈┈┉─━", "━─┉┈◈ Do you step through the mirror? ◈┈┉─━"), choices_final)
+            if choices == "Become whole again":
+                lib.slow_type_font_color("Magenta", "Fancy", self.game.alt_text(
+                    "Thank you for playing Voidfallen."
+                    "Thank you for playing Voidfallen."
+                ))
+
+
+        else:
+            self.console.print(self.game.alt_text(
+                "The way to the past is blocked.",
+                "The mirror remains shattered, refusing to show you anything."
+            ))
+
+
 
     def _explore_village(self):
         if not self.game.village_visited_first_time:
@@ -508,6 +766,20 @@ class Exploration:
     def _explore_cavern(self):
         if self.game.act == 2:
             self.game.cavern_explore()
+            self.game.act = 3
+            lib.slow_type_font_color("Red", "Bold", self.game.alt_text(
+                "━─┉┈◈ Act 3 ◈┈┉─━",
+                "━─┉┈◈ Act 3 ◈┈┉─━"
+            ))
+            lib.slow_type_font_color("Red", "Bold", self.game.alt_text(
+                "You have unlocked the Cavern",
+                "You have unlocked the Flesh"
+            ))
+            lib.slow_type_font_color("Red", "Bold", self.game.alt_text(
+                "You hear a faint roar from the sky, something is coming...",
+                "Something makes you feel as if this is far from the end."
+            ))
+            self.game.save_game()
         else:
             self.console.print(self.game.alt_text(
                 "The cavern is not yet accessible.",
@@ -515,12 +787,28 @@ class Exploration:
             ))
 
     def _explore_volcano(self):
-        if self.game.act != 2:
+        if self.game.act != 3:
             self.console.print(self.game.alt_text(
                 "The way to the volcano is blocked.",
                 "The bleeding mountain denies you."
+
             ))
             return
+        if self.game.act == 3:
+            slow_type_font_color("Red", "Bold", self.game.alt_text(
+                "━─┉┈◈ Act 4 ◈┈┉─━",
+                "━─┉┈◈ Act 4 ◈┈┉─━",
+                self.game.act == 4
+            ))
+            slow_type_font_color("Red", "Bold", self.game.alt_text(
+                "The dragon lies within the depths of the volcano, for you will be the one to slay it.",
+                "Face your fate, for this is the final act."
+            ))
+
+            slow_type_font_color("Red", "Bold", self.game.alt_text(
+                "You have unlocked the Volcano, and the skylands!",
+                "You have unlocked the Bleeding Mountain, and the Depths!"
+            ))
 
         self.console.print(self.game.alt_text(
             "You begin the treacherous climb up the volcano. The air is hot and smells of sulfur.",
