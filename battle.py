@@ -120,7 +120,7 @@ class Battle:
             self.player.inventory["Bandage"] -= 1
             self.player.poison_turns = 0
             self.player.bleed_turns = 0
-            console.print("You use a bandage and cure all bleeding and poison effects!")
+            console.print("You use a bandage ease your wounds.")
         elif choice == "Back":
             return
 
