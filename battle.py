@@ -72,7 +72,7 @@ class Battle:
                 # Enemy turn: check for flee, then attack
                 is_low_health = self.enemy['hp'] < self.enemy_max_hp * 0.2
                 if is_low_health and random.random() < 0.1:
-                    console.print(f"The {self.enemy['name']} flees! But you havhe the feeling this isn't the end.")
+                    console.print(f"The {self.enemy['name']} flees! But you have the feeling this isn't the end.")
                     return "enemy_fled"
 
                 self._handle_enemy_attack()
@@ -94,25 +94,40 @@ class Battle:
 
     def _handle_use_item(self):
         """Handles the player's 'use item' action."""
+        usable_items = []
         if self.player.inventory.get("Potion", 0) > 0:
+            usable_items.append("Potion")
+        if self.cavern and self.player.inventory.get("Animal Fat", 0) > 0:
+            usable_items.append("Animal Fat")
+        if self.player.inventory.get("Bandage", 0) > 0:
+            usable_items.append("Bandage")
+
+        if not usable_items:
+            console.print("You have no usable items!")
+            return
+
+        usable_items.append("Back")
+        choice = lib.select("Which item will you use?", usable_items)
+
+        if choice == "Potion":
             self.player.inventory["Potion"] -= 1
             self.player.heal(30)
             console.print("You drink a potion and restore 30 HP.")
-        elif self.cavern and self.player.inventory.get("Animal Fat", 0) > 0:
+        elif choice == "Animal Fat":
             self.player.inventory["Animal Fat"] -= 1
             self.player.refuel_lantern(3)
-        elif self.player.inventory.get("Bandage", 0) > 0:
+        elif choice == "Bandage":
             self.player.inventory["Bandage"] -= 1
             self.player.poison_turns = 0
             self.player.bleed_turns = 0
             console.print("You use a bandage and cure all bleeding and poison effects!")
-        else:
-            console.print("You have no usable items!")
+        elif choice == "Back":
+            return
 
     def _handle_run(self) -> bool:
         """Handles the player's attempt to run from battle."""
         if random.random() < 0.5:
-            console.print("You have fled sucsessfuly, cheers to living another day!")
+            console.print("You have fled successfully, cheers to living another day!")
             return True
         console.print("You try to flee, but you are held back by the enemy encroaching")
         return False
