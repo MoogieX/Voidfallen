@@ -114,7 +114,7 @@ class Game:
 
        if choices == "Yes":
            console.print("'Very well then.' The figure moves aside for you to join them")
-       else:
+       if choices == "No":
            console.print("'That's alright, just stay to talk, if you will.'")
 
        intro_ask2 = ["Yes", "No"]
@@ -126,7 +126,7 @@ class Game:
                f"{self.player.name}, there is an old trail up to the East. "
                "You may find an inn where you can stay..."
            )
-       else:
+       if choices == "No":
            console.print(
                "'Not that I would have expected you to. '"
                "'There are creatures from the north, they have been encroaching on our void... '"
@@ -529,6 +529,9 @@ class Game:
        if self.act == 2:
            events.append({"chance": 0.13, "handler": self._handle_rare_enemy_event})
 
+       if self.act == 3:
+           events.append({"chance": 0.15, "handler": self._handle_volcano_enemy_event})
+
 
        # Sort events by chance in descending order to ensure correct priority
        events.sort(key=lambda x: x["chance"], reverse=True)
@@ -554,7 +557,7 @@ class Game:
            weights=[3, 3, 2, 1, 1], k=1
        )[0]
        if loot_type == "Gold":
-           amount = random.randint(5, 20)
+           amount = random.randint(1, 10)
            self.player.coins["gold"] += amount
            console.print(f"You find a hidden chest! Inside is {amount} gold coins.")
        elif loot_type == "Armor":
@@ -630,9 +633,25 @@ class Game:
        console.print("The world seems to shift and struggle beneath your feet... Everything feels... wrong.")
 
 
-   # --- Alternate mode dialog/logic wrappers ---
+   # --- Alternate mode dialog stuff ----
    def alt_text(self, normal, alt):
        return alt if self.alt_mode else normal
+
+   def has_seen_cutscene(self, name: str) -> bool:
+       """Returns True if the player has already seen the cutscene named `name`."""
+       return bool(getattr(self.player, "seen_cutscenes", {}).get(name, False))
+
+   def mark_cutscene_seen(self, name: str, autosave: bool = True) -> None:
+       """Mark a cutscene as seen and optionally save the game.
+
+       Call `mark_cutscene_seen("loris_intro")` to persist that the player has
+       observed a story moment. `autosave` defaults to True.
+       """
+       if not hasattr(self.player, "seen_cutscenes"):
+           self.player.seen_cutscenes = {}
+       self.player.seen_cutscenes[name] = True
+       if autosave:
+           self.save_game()
 
 
    def explore(self) -> str:
@@ -1070,7 +1089,7 @@ class Game:
 
 if __name__ == "__main__":
     game = Game()
-    console.print("Version 1.2 (THIS IS AN SOMEWHAT UNSTABLE ALPHA BUILD! For developers and beta testers ONLY!")
+    console.print("Version 1.2 (THIS IS AN SOMEWHAT UNSTABLE ALPHA BUILD!)")
     lib.slow_type_font_color("Magenta", "Fancy", 'Welcome to Voidfallen! A game by yours truly. -Moogietheboogie✦✦✦')
 
     menu_choices = [
@@ -1105,7 +1124,7 @@ if __name__ == "__main__":
                 if result in ["lost_boss", "lost_normal"]:
                     continue
             elif intro_choice == "No":
-                game.new_intro()
+                game.intro()
                 result = game.explore()
                 if result in ["lost_boss", "lost_normal"]:
                     continue
